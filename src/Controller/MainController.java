@@ -1,9 +1,9 @@
 package Controller;
 
 import DAO.AppointmentDAO;
-import DAO.UserDAO;
 import Model.Appointment;
 import Model.User;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -16,10 +16,12 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ResourceBundle;
 
+
 public class MainController implements Initializable {
     public TableView <Appointment> appointmentsTable;
     public RadioButton monthRadio;
     public RadioButton weekRadio;
+    public RadioButton allApptsRadio;
     public Label appointmentIDLabel;
     public TextField titleField;
     public TextArea descriptionField;
@@ -50,6 +52,7 @@ public class MainController implements Initializable {
     public TableColumn customerIDColumn;
     public TableColumn userIDColumn;
 
+
     public static User getCurrentUser() {
         return currentUser;
     }
@@ -62,13 +65,30 @@ public class MainController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         weekRadio.setToggleGroup(viewToggleGroup);
         monthRadio.setToggleGroup(viewToggleGroup);
+        allApptsRadio.setToggleGroup(viewToggleGroup);
         statusLabel.setText("Currently logged in as: " + getCurrentUser().getUserName());
-        //tableToWeekly();
         try {
-            appointmentsTable.setItems(AppointmentDAO.getAllAppointments());
+            setTable(AppointmentDAO.getAllAppointments());
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
+
+    }
+
+    public void allApptsClicked(ActionEvent actionEvent) throws SQLException {
+        setTable(AppointmentDAO.getAllAppointments());
+    }
+
+    public void weeklyClicked(ActionEvent actionEvent) throws SQLException {
+        setTable(AppointmentDAO.getWeeklyAppointments());
+    }
+
+    public void monthlyClicked(ActionEvent actionEvent) throws SQLException {
+        setTable(AppointmentDAO.getMonthlyAppointments());
+    }
+
+    public void setTable(ObservableList<Appointment> currentList){
+        appointmentsTable.setItems(currentList);
 
         appointmentIDColumn.setCellValueFactory(new PropertyValueFactory<>("appointmentID"));
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
@@ -81,24 +101,4 @@ public class MainController implements Initializable {
         customerIDColumn.setCellValueFactory(new PropertyValueFactory<>("customerID"));
         userIDColumn.setCellValueFactory(new PropertyValueFactory<>("userID"));
     }
-
-    public void tableToWeekly() throws SQLException {
-
-
-
-    }
-
-    public void tableToMonthly(){
-
-    }
-
-    public void weeklyClicked(ActionEvent actionEvent){
-
-    }
-
-    public void monthlyClicked(ActionEvent actionEvent){
-
-    }
-
-
 }
