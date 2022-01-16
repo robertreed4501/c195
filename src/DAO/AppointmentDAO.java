@@ -18,24 +18,21 @@ public class AppointmentDAO {
 
     public static ObservableList<Appointment> getAllAppointments() throws SQLException {
         allAppointments = FXCollections.observableArrayList();
-        Query.makeQuery("SELECT * FROM APPOINTMENTS");
+        Query.makeQuery("select a.Appointment_ID, a.Title, a.Description, a.Location, c.Contact_Name as Contact, a.Type, a.Start, a.End, a.Customer_ID, a.User_ID FROM appointments as a join contacts as c on a.Contact_ID=c.Contact_ID");
         ResultSet resultSet = Query.getResult();
         while(resultSet.next()){
             int appointmentID = resultSet.getInt("Appointment_ID");
             String title = resultSet.getString("Title");
             String description = resultSet.getString("Description");
             String location = resultSet.getString("Location");
+            String contact = resultSet.getString("Contact");
             String type = resultSet.getString("Type");
-            LocalDateTime start = LocalDateTime.parse(resultSet.getString("Start"), dtf);
-            LocalDateTime end = LocalDateTime.parse(resultSet.getString("End"), dtf);
-            LocalDateTime createDate = LocalDateTime.parse(resultSet.getString("Create_Date"), dtf);
-            String createdBy = resultSet.getString("Created_By");
-            LocalDateTime lastUpdated = LocalDateTime.parse(resultSet.getString("Last_Update"), dtf);
-            String lastUpdatedBy = resultSet.getString("Last_Updated_By");
+            LocalDateTime start = LocalDateTime.parse(resultSet.getString("Start"), dtf).minusHours(5);
+            LocalDateTime end = LocalDateTime.parse(resultSet.getString("End"), dtf).minusHours(5);
             int customerID = resultSet.getInt("Customer_ID");
             int userID = resultSet.getInt("User_ID");
-            int contactID = resultSet.getInt("Contact_ID");
-            allAppointments.add(new Appointment(appointmentID, customerID, userID, contactID, title, description, location, type, createdBy, lastUpdatedBy, start, end, createDate, lastUpdated));
+
+            allAppointments.add(new Appointment(appointmentID, customerID, userID, contact, title, description, location, type, start, end));
         }
 
         return allAppointments;
@@ -43,24 +40,21 @@ public class AppointmentDAO {
 
     public static ObservableList<Appointment> getWeeklyAppointments() throws SQLException {
         allAppointments = FXCollections.observableArrayList();
-        Query.makeQuery("select * from appointments where Start between now() and adddate(now(), 7)");
+        Query.makeQuery("select a.Appointment_ID, a.Title, a.Description, a.Location, c.Contact_Name as Contact, a.Type, a.Start, a.End, a.Customer_ID, a.User_ID FROM appointments as a join contacts as c on a.Contact_ID=c.Contact_ID where Start between now() and adddate(now(), 7)");
         ResultSet resultSet = Query.getResult();
         while(resultSet.next()){
             int appointmentID = resultSet.getInt("Appointment_ID");
             String title = resultSet.getString("Title");
             String description = resultSet.getString("Description");
             String location = resultSet.getString("Location");
+            String contact = resultSet.getString("Contact");
             String type = resultSet.getString("Type");
-            LocalDateTime start = LocalDateTime.parse(resultSet.getString("Start"), dtf);
-            LocalDateTime end = LocalDateTime.parse(resultSet.getString("End"), dtf);
-            LocalDateTime createDate = LocalDateTime.parse(resultSet.getString("Create_Date"), dtf);
-            String createdBy = resultSet.getString("Created_By");
-            LocalDateTime lastUpdated = LocalDateTime.parse(resultSet.getString("Last_Update"), dtf);
-            String lastUpdatedBy = resultSet.getString("Last_Updated_By");
+            LocalDateTime start = LocalDateTime.parse(resultSet.getString("Start"), dtf).minusHours(5);
+            LocalDateTime end = LocalDateTime.parse(resultSet.getString("End"), dtf).minusHours(5);
             int customerID = resultSet.getInt("Customer_ID");
             int userID = resultSet.getInt("User_ID");
-            int contactID = resultSet.getInt("Contact_ID");
-            allAppointments.add(new Appointment(appointmentID, customerID, userID, contactID, title, description, location, type, createdBy, lastUpdatedBy, start, end, createDate, lastUpdated));
+
+            allAppointments.add(new Appointment(appointmentID, customerID, userID, contact, title, description, location, type, start, end));
         }
 
         return allAppointments;
@@ -68,24 +62,21 @@ public class AppointmentDAO {
 
     public static ObservableList<Appointment> getMonthlyAppointments() throws SQLException {
         allAppointments = FXCollections.observableArrayList();
-        Query.makeQuery("select * from appointments where Start between now() and adddate(now(),interval 1 month)");
+        Query.makeQuery("select a.Appointment_ID, a.Title, a.Description, a.Location, c.Contact_Name as Contact, a.Type, a.Start, a.End, a.Customer_ID, a.User_ID FROM appointments as a join contacts as c on a.Contact_ID=c.Contact_ID where Start between now() and adddate(now(),interval 1 month)");
         ResultSet resultSet = Query.getResult();
         while(resultSet.next()){
             int appointmentID = resultSet.getInt("Appointment_ID");
             String title = resultSet.getString("Title");
             String description = resultSet.getString("Description");
             String location = resultSet.getString("Location");
+            String contact = resultSet.getString("Contact");
             String type = resultSet.getString("Type");
-            LocalDateTime start = LocalDateTime.parse(resultSet.getString("Start"), dtf);
-            LocalDateTime end = LocalDateTime.parse(resultSet.getString("End"), dtf);
-            LocalDateTime createDate = LocalDateTime.parse(resultSet.getString("Create_Date"), dtf);
-            String createdBy = resultSet.getString("Created_By");
-            LocalDateTime lastUpdated = LocalDateTime.parse(resultSet.getString("Last_Update"), dtf);
-            String lastUpdatedBy = resultSet.getString("Last_Updated_By");
+            LocalDateTime start = LocalDateTime.parse(resultSet.getString("Start"), dtf).minusHours(5);
+            LocalDateTime end = LocalDateTime.parse(resultSet.getString("End"), dtf).minusHours(5);
             int customerID = resultSet.getInt("Customer_ID");
             int userID = resultSet.getInt("User_ID");
-            int contactID = resultSet.getInt("Contact_ID");
-            allAppointments.add(new Appointment(appointmentID, customerID, userID, contactID, title, description, location, type, createdBy, lastUpdatedBy, start, end, createDate, lastUpdated));
+
+            allAppointments.add(new Appointment(appointmentID, customerID, userID, contact, title, description, location, type, start, end));
         }
 
         return allAppointments;

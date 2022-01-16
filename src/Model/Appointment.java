@@ -1,29 +1,24 @@
 package Model;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class Appointment {
-    private int appointmentID, customerID, userID, contactID;
-    private String title, description, location, type, createdBy, lastUpdatedBy;
-    private LocalDateTime start, end, createDate, lastUpdate;
+    private int appointmentID, customerID, userID;
+    private String title, description, location, type, contact;
+    private LocalDateTime start, end;
 
 
-    public Appointment(int appointmentID, int customerID, int userID, int contactID, String title, String description, String location, String type, String createdBy, String lastUpdatedBy, LocalDateTime start, LocalDateTime end, LocalDateTime createDate, LocalDateTime lastUpdate) {
+    public Appointment(int appointmentID, int customerID, int userID, String contactID, String title, String description, String location, String type, LocalDateTime start, LocalDateTime end) {
         this.appointmentID = appointmentID;
         this.customerID = customerID;
         this.userID = userID;
-        this.contactID = contactID;
+        this.contact = contactID;
         this.title = title;
         this.description = description;
         this.location = location;
         this.type = type;
-        this.createdBy = createdBy;
-        this.lastUpdatedBy = lastUpdatedBy;
         this.start = start;
         this.end = end;
-        this.createDate = createDate;
-        this.lastUpdate = lastUpdate;
     }
 
     public int getAppointmentID() {
@@ -50,12 +45,12 @@ public class Appointment {
         this.userID = userID;
     }
 
-    public int getContactID() {
-        return contactID;
+    public String getContact() {
+        return contact;
     }
 
-    public void setContactID(int contactID) {
-        this.contactID = contactID;
+    public void setContact(String contact) {
+        this.contact = contact;
     }
 
     public String getTitle() {
@@ -90,22 +85,6 @@ public class Appointment {
         this.type = type;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public String getLastUpdatedBy() {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy(String lastUpdatedBy) {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
     public LocalDateTime getStart() {
         return start;
     }
@@ -122,19 +101,4 @@ public class Appointment {
         this.end = end;
     }
 
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(LocalDateTime createDate) {
-        this.createDate = createDate;
-    }
-
-    public LocalDateTime getLastUpdate() {
-        return lastUpdate;
-    }
-
-    public void setLastUpdate(LocalDateTime lastUpdate) {
-        this.lastUpdate = lastUpdate;
-    }
 }

@@ -1,8 +1,11 @@
 package Controller;
 
 import DAO.AppointmentDAO;
+import DAO.ContactDAO;
 import Model.Appointment;
+import Model.Contact;
 import Model.User;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
@@ -49,9 +52,11 @@ public class MainController implements Initializable {
     public TableColumn typeColumn;
     public TableColumn startColumn;
     public TableColumn endColumn;
-    public TableColumn customerIDColumn;
+    public TableColumn customerColumn;
     public TableColumn userIDColumn;
-
+    public DatePicker dateFieldPicker;
+    public ObservableList<String> contactNameList;
+    public ObservableList<Contact> contactsList;
 
     public static User getCurrentUser() {
         return currentUser;
@@ -68,37 +73,53 @@ public class MainController implements Initializable {
         allApptsRadio.setToggleGroup(viewToggleGroup);
         statusLabel.setText("Currently logged in as: " + getCurrentUser().getUserName());
         try {
-            setTable(AppointmentDAO.getAllAppointments());
+            setApptsTable(AppointmentDAO.getAllAppointments());
+            contactsList = ContactDAO.getAllContacts();
+            contactNameList = FXCollections.observableArrayList();
+            for(int i = 0; i < contactsList.size(); i++){
+                contactNameList.add(contactsList.get(i).getContactName());
+            }
+            contactCombo.setItems(contactNameList);
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        throwables.printStackTrace();
+    }
 
     }
 
     public void allApptsClicked(ActionEvent actionEvent) throws SQLException {
-        setTable(AppointmentDAO.getAllAppointments());
+        setApptsTable(AppointmentDAO.getAllAppointments());
     }
 
     public void weeklyClicked(ActionEvent actionEvent) throws SQLException {
-        setTable(AppointmentDAO.getWeeklyAppointments());
+        setApptsTable(AppointmentDAO.getWeeklyAppointments());
     }
 
     public void monthlyClicked(ActionEvent actionEvent) throws SQLException {
-        setTable(AppointmentDAO.getMonthlyAppointments());
+        setApptsTable(AppointmentDAO.getMonthlyAppointments());
     }
 
-    public void setTable(ObservableList<Appointment> currentList){
+    public void setApptsTable(ObservableList<Appointment> currentList){
         appointmentsTable.setItems(currentList);
 
         appointmentIDColumn.setCellValueFactory(new PropertyValueFactory<>("appointmentID"));
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         locationColumn.setCellValueFactory(new PropertyValueFactory<>("location"));
-        contactColumn.setCellValueFactory(new PropertyValueFactory<>("contactID"));
+        contactColumn.setCellValueFactory(new PropertyValueFactory<>("contact"));
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
         startColumn.setCellValueFactory(new PropertyValueFactory<Appointment, LocalDateTime>("start"));
         endColumn.setCellValueFactory(new PropertyValueFactory<>("end"));
-        customerIDColumn.setCellValueFactory(new PropertyValueFactory<>("customerID"));
+        customerColumn.setCellValueFactory(new PropertyValueFactory<>("customerID"));
         userIDColumn.setCellValueFactory(new PropertyValueFactory<>("userID"));
+    }
+
+    public void populateFields() {
+        appointmentIDLabel.setText(Integer.toString(appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID()));
+        titleField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getTitle());
+        descriptionField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getDescription());
+        locationField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getLocation());
+        typeField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getType());
+        dateFieldPicker.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getStart().toLocalDate());
+        contactCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getContact());
     }
 }
