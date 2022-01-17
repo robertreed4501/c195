@@ -4,22 +4,17 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class Customer {
-    private int customerID, divisionID;
-    private String customerName, address, postalCode, phone, createdBy, lastUpdatedBy;
-    private LocalDateTime createDate;
-    private Timestamp lastUpdate;
+    private int customerID;
+    private String customerName, address, postalCode, phone, division, Country;
 
-    public Customer(int customerID, int divisionID, String customerName, String address, String postalCode, String phone, String createdBy, String lastUpdatedBy, LocalDateTime createDate, Timestamp lastUpdate) {
+    public Customer(int customerID, String customerName, String address, String postalCode, String phone, String division, String country) {
         this.customerID = customerID;
-        this.divisionID = divisionID;
         this.customerName = customerName;
         this.address = address;
         this.postalCode = postalCode;
         this.phone = phone;
-        this.createdBy = createdBy;
-        this.lastUpdatedBy = lastUpdatedBy;
-        this.createDate = createDate;
-        this.lastUpdate = lastUpdate;
+        this.division = division;
+        Country = country;
     }
 
     public int getCustomerID() {
@@ -28,14 +23,6 @@ public class Customer {
 
     public void setCustomerID(int customerID) {
         this.customerID = customerID;
-    }
-
-    public int getDivisionID() {
-        return divisionID;
-    }
-
-    public void setDivisionID(int divisionID) {
-        this.divisionID = divisionID;
     }
 
     public String getCustomerName() {
@@ -70,35 +57,19 @@ public class Customer {
         this.phone = phone;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
+    public String getDivision() {
+        return division;
     }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
+    public void setDivision(String division) {
+        this.division = division;
     }
 
-    public String getLastUpdatedBy() {
-        return lastUpdatedBy;
+    public String getCountry() {
+        return Country;
     }
 
-    public void setLastUpdatedBy(String lastUpdatedBy) {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(LocalDateTime createDate) {
-        this.createDate = createDate;
-    }
-
-    public Timestamp getLastUpdate() {
-        return lastUpdate;
-    }
-
-    public void setLastUpdate(Timestamp lastUpdate) {
-        this.lastUpdate = lastUpdate;
+    public void setCountry(String country) {
+        Country = country;
     }
 }

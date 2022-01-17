@@ -7,8 +7,9 @@ import javafx.collections.ObservableList;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 
 public class AppointmentDAO {
 
@@ -27,8 +28,8 @@ public class AppointmentDAO {
             String location = resultSet.getString("Location");
             String contact = resultSet.getString("Contact");
             String type = resultSet.getString("Type");
-            LocalDateTime start = LocalDateTime.parse(resultSet.getString("Start"), dtf).minusHours(5);
-            LocalDateTime end = LocalDateTime.parse(resultSet.getString("End"), dtf).minusHours(5);
+            ZonedDateTime start = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("Start"), dtf), ZoneId.systemDefault());
+            ZonedDateTime end = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("End"), dtf), ZoneId.systemDefault());
             int customerID = resultSet.getInt("Customer_ID");
             int userID = resultSet.getInt("User_ID");
 
@@ -49,8 +50,8 @@ public class AppointmentDAO {
             String location = resultSet.getString("Location");
             String contact = resultSet.getString("Contact");
             String type = resultSet.getString("Type");
-            LocalDateTime start = LocalDateTime.parse(resultSet.getString("Start"), dtf).minusHours(5);
-            LocalDateTime end = LocalDateTime.parse(resultSet.getString("End"), dtf).minusHours(5);
+            ZonedDateTime start = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("Start"), dtf), ZoneId.systemDefault());
+            ZonedDateTime end = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("End"), dtf), ZoneId.systemDefault());
             int customerID = resultSet.getInt("Customer_ID");
             int userID = resultSet.getInt("User_ID");
 
@@ -71,8 +72,8 @@ public class AppointmentDAO {
             String location = resultSet.getString("Location");
             String contact = resultSet.getString("Contact");
             String type = resultSet.getString("Type");
-            LocalDateTime start = LocalDateTime.parse(resultSet.getString("Start"), dtf).minusHours(5);
-            LocalDateTime end = LocalDateTime.parse(resultSet.getString("End"), dtf).minusHours(5);
+            ZonedDateTime start = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("Start"), dtf), ZoneId.systemDefault());
+            ZonedDateTime end = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("End"), dtf), ZoneId.systemDefault());
             int customerID = resultSet.getInt("Customer_ID");
             int userID = resultSet.getInt("User_ID");
 
