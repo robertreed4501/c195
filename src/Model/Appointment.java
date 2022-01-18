@@ -1,26 +1,16 @@
 package Model;
 
+import DAO.AppointmentDAO;
+
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 public class Appointment {
     private int appointmentID, customerID, userID;
-    private String title, description, location, type, contact;
-    private ZonedDateTime start, end;
+    private String title, description, location, type, contact, start, end;
+    private ZonedDateTime startZDT, endZDT;
 
-
-    public Appointment(int appointmentID, int customerID, int userID, String contactID, String title, String description, String location, String type, ZonedDateTime start, ZonedDateTime end) {
-        this.appointmentID = appointmentID;
-        this.customerID = customerID;
-        this.userID = userID;
-        this.contact = contactID;
-        this.title = title;
-        this.description = description;
-        this.location = location;
-        this.type = type;
-        this.start = start;
-        this.end = end;
-    }
 
     public int getAppointmentID() {
         return appointmentID;
@@ -44,14 +34,6 @@ public class Appointment {
 
     public void setUserID(int userID) {
         this.userID = userID;
-    }
-
-    public String getContact() {
-        return contact;
-    }
-
-    public void setContact(String contact) {
-        this.contact = contact;
     }
 
     public String getTitle() {
@@ -86,20 +68,62 @@ public class Appointment {
         this.type = type;
     }
 
-    public ZonedDateTime getStart() {
+    public String getContact() {
+        return contact;
+    }
+
+    public void setContact(String contact) {
+        this.contact = contact;
+    }
+
+    public String getStart() {
         return start;
     }
 
-    public void setStart(ZonedDateTime start) {
+    public void setStart(String start) {
         this.start = start;
     }
 
-    public ZonedDateTime getEnd() {
+    public String getEnd() {
         return end;
     }
 
-    public void setEnd(ZonedDateTime end) {
+    public void setEnd(String end) {
         this.end = end;
     }
+
+    public ZonedDateTime getStartZDT() {
+        return startZDT;
+    }
+
+    public void setStartZDT(ZonedDateTime startZDT) {
+        this.startZDT = startZDT;
+    }
+
+    public ZonedDateTime getEndZDT() {
+        return endZDT;
+    }
+
+    public void setEndZDT(ZonedDateTime endZDT) {
+        this.endZDT = endZDT;
+    }
+
+    public Appointment(int appointmentID, int customerID, int userID, String contactID, String title, String description, String location, String type, ZonedDateTime startZDT, ZonedDateTime endZDT) {
+        this.appointmentID = appointmentID;
+        this.customerID = customerID;
+        this.userID = userID;
+        this.contact = contactID;
+        this.title = title;
+        this.description = description;
+        this.location = location;
+        this.type = type;
+        this.start = AppointmentDAO.dtf.format(startZDT.withZoneSameInstant(ZoneId.systemDefault()));
+        this.end = AppointmentDAO.dtf.format(endZDT.withZoneSameInstant(ZoneId.systemDefault()));
+        this.startZDT = startZDT;
+        this.endZDT = endZDT;
+    }
+
+
+
 
 }

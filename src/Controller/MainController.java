@@ -13,13 +13,10 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import javafx.util.converter.LocalTimeStringConverter;
 
 import java.net.URL;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.time.*;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 
@@ -76,6 +73,7 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources){
+        //***Set up Appointments Tab***//
         offset = ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now());
         appointmentIDLabel.setText("");
         weekRadio.setToggleGroup(viewToggleGroup);
@@ -116,10 +114,29 @@ public class MainController implements Initializable {
 
             }
             startTimeCombo.setItems(apptTimes);
+            endTimeCombo.setItems(apptTimes);
+            appointmentsTable.getSortOrder().add(appointmentIDColumn);
+
+
+                ObservableList<Appointment> allAppointments = AppointmentDAO.getAllAppointments();
+                for (int i = 0; i < allAppointments.size(); i++){
+                    if (ZonedDateTime.now().plusMinutes(15).isAfter(allAppointments.get(i).getStartZDT()) && ZonedDateTime.now().isBefore(allAppointments.get(i).getStartZDT())){
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION, "You have an appointment soon");
+                        alert.showAndWait();
+                    }
+                }
 
         } catch (SQLException throwables) {
         throwables.printStackTrace();
-    }
+        }
+
+
+        //***set up Customers tab***//
+
+
+        //***set up Reports tab***//
+
+
 
     }
 
@@ -144,31 +161,50 @@ public class MainController implements Initializable {
         locationColumn.setCellValueFactory(new PropertyValueFactory<>("location"));
         contactColumn.setCellValueFactory(new PropertyValueFactory<>("contact"));
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
-        startColumn.setCellValueFactory(new PropertyValueFactory<Appointment, ZonedDateTime>("start"));
-        endColumn.setCellValueFactory(new PropertyValueFactory<>("end"));
+        startColumn.setCellValueFactory(new PropertyValueFactory<Appointment, String>("start"));
+        /*startColumn.setCellFactory(column -> {
+            TableCell<Appointment, ZonedDateTime> cell = new TableCell<Appointment, ZonedDateTime>() {
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                @Override
+                protected void updateItem(ZonedDateTime item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if(empty) {
+                        setText(null);
+                    }
+                    else {
+                        this.setText(dtf.format(item));
+                    }
+                }
+            };
+            return cell;
+        });*/
+        endColumn.setCellValueFactory(new PropertyValueFactory<Appointment, String>("end"));
         customerColumn.setCellValueFactory(new PropertyValueFactory<>("customerID"));
         userIDColumn.setCellValueFactory(new PropertyValueFactory<>("userID"));
+        appointmentsTable.getSortOrder().add(appointmentIDColumn);
     }
 
-    public void populateFields() {
+    public void populateApptFields() {
         if(!appointmentsTable.getSelectionModel().isEmpty()) {
             appointmentIDLabel.setText(Integer.toString(appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID()));
             titleField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getTitle());
             descriptionField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getDescription());
             locationField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getLocation());
             typeField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getType());
-            dateFieldPicker.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getStart().toLocalDate());
+            dateFieldPicker.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getStartZDT().toLocalDate());
             contactCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getContact());
             userIDCombo.setValue(Integer.toString(appointmentsTable.getSelectionModel().getSelectedItem().getUserID()));
             customerIDCombo.setValue(Integer.toString(appointmentsTable.getSelectionModel().getSelectedItem().getCustomerID()));
-            startTimeCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getStart().toLocalTime().toString());
-            endTimeCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getEnd().toLocalTime().toString());
+            startTimeCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getStartZDT().withZoneSameInstant(ZoneId.systemDefault()).toLocalTime().toString());
+            endTimeCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getEndZDT().withZoneSameInstant(ZoneId.systemDefault()).toLocalTime().toString());
             saveButton.setDisable(true);
             updateButton.setDisable(false);
+            newAppointmentButton.setDisable(false);
         }
     }
 
-    public int nextAppointmentID() throws SQLException {
+    public static int nextAppointmentID() throws SQLException {
         ObservableList<Appointment> allAppointments = AppointmentDAO.getAllAppointments();
         int max =0;
         for (int i = 0; i < allAppointments.size(); i++){
@@ -180,13 +216,21 @@ public class MainController implements Initializable {
     }
 
     public void newAppointmentClicked() throws SQLException {
+        clearApptFields();
         appointmentIDLabel.setText(Integer.toString(nextAppointmentID()));
+        newAppointmentButton.setDisable(true);
+    }
+
+    public void clearApptFields(){
+        appointmentIDLabel.setText("");
         titleField.clear();
         descriptionField.clear();
         locationField.clear();
         typeField.clear();
-        dateFieldPicker.disarm();
+        dateFieldPicker.setValue(null);
         contactCombo.setValue("");
+        startTimeCombo.setValue("");
+        endTimeCombo.setValue("");
         userIDCombo.setValue("");
         customerIDCombo.setValue("");
         saveButton.setDisable(false);
@@ -194,9 +238,65 @@ public class MainController implements Initializable {
         appointmentsTable.getSelectionModel().clearSelection();
     }
 
+    public void saveApptClicked() throws SQLException {
+        int apptID = nextAppointmentID();
+        String title = titleField.getText();
+        String description = descriptionField.getText();
+        String location = locationField.getText();
+        String type = typeField.getText();
+        ZonedDateTime start = ZonedDateTime.of(dateFieldPicker.getValue(), LocalTime.parse(startTimeCombo.getValue()), ZoneId.systemDefault());
+        ZonedDateTime end = ZonedDateTime.of(dateFieldPicker.getValue(), LocalTime.parse(endTimeCombo.getValue()), ZoneId.systemDefault());
+        int customerID = Integer.parseInt(customerIDCombo.getValue());
+        int userID = Integer.parseInt(userIDCombo.getValue());
+        int contactID = getContactID(contactCombo.getValue());
+
+        AppointmentDAO.createNewAppointment(apptID, title, description, location, type, start, end, customerID, userID, contactID);
+        setApptsTable(AppointmentDAO.getAllAppointments());
+        clearApptFields();
+        allApptsRadio.setSelected(true);
+        saveButton.setDisable(true);
+        updateButton.setDisable(false);
+        newAppointmentButton.setDisable(false);
+    }
+
+    public int getContactID(String contactName) throws SQLException {
+        ObservableList<Contact> allContacts = ContactDAO.getAllContacts();
+        for(int i = 0; i < allContacts.size(); i++){
+            if(allContacts.get(i).getContactName().equals(contactName)) return allContacts.get(i).getContactID();
+
+        }
+        return -1;
+    }
+
     public void exitClicked(ActionEvent actionEvent) throws SQLException {
         DBConnection.closeConnection();
         Stage stage = (Stage) ((Node)actionEvent.getSource()).getScene().getWindow();
         stage.close();
+    }
+
+    public void deleteApptClicked() throws SQLException {
+        int apptID = appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID();
+        AppointmentDAO.delete(apptID);
+        setApptsTable(AppointmentDAO.getAllAppointments());
+        clearApptFields();
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Appointment ID: " + apptID + " has been cancelled.");
+        alert.showAndWait();
+    }
+
+    public void updateApptClicked(ActionEvent actionEvent) throws SQLException {
+        int apptID = appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID();
+        String title = titleField.getText();
+        String description = descriptionField.getText();
+        String location = locationField.getText();
+        String type = typeField.getText();
+        ZonedDateTime start = ZonedDateTime.of(dateFieldPicker.getValue(), LocalTime.parse(startTimeCombo.getValue()), ZoneId.systemDefault());
+        ZonedDateTime end = ZonedDateTime.of(dateFieldPicker.getValue(), LocalTime.parse(endTimeCombo.getValue()), ZoneId.systemDefault());
+        int customerID = Integer.parseInt(customerIDCombo.getValue());
+        int userID = Integer.parseInt(userIDCombo.getValue());
+        int contactID = getContactID(contactCombo.getValue());
+        AppointmentDAO.updateAppointment(apptID, title, description, location, type, start, end, customerID, userID, contactID);
+        setApptsTable(AppointmentDAO.getAllAppointments());
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Appointment ID: " + apptID + " has been updated.");
+        alert.showAndWait();
     }
 }
