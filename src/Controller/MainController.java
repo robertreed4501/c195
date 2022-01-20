@@ -35,10 +35,10 @@ public class MainController implements Initializable {
     public ComboBox <String> endTimeCombo;
     public ComboBox <String> customerIDCombo;
     public ComboBox <String> userIDCombo;
-    public Button saveButton;
-    public Button updateButton;
-    public Button deleteButton;
-    public Button exitButton;
+    public Button saveApptButton;
+    public Button updateApptButton;
+    public Button deleteApptButton;
+    public Button exitApptButton;
     public Button newAppointmentButton;
     public ToggleGroup viewToggleGroup;
     private static User currentUser;
@@ -62,6 +62,27 @@ public class MainController implements Initializable {
     public ObservableList<String> customerIDList;
     public ObservableList<Customer> customerList;
     public ObservableList<String> apptTimes;
+    public TableView<Customer> customerTable;
+    public TableColumn customerIDColumn;
+    public TableColumn nameColumn;
+    public TableColumn addressColumn;
+    public TableColumn postalCodeColumn;
+    public TableColumn phoneColumn;
+    public TableColumn countryColumn;
+    public TableColumn divisionColumn;
+    public TextField nameField;
+    public TextField addressField;
+    public TextField postalCodeField;
+    public Label customerIDLabel;
+    public TextField phoneField;
+    public ComboBox countryCombo;
+    public ComboBox divisionCombo;
+    public Button newCustomerButton;
+    public Button saveCustomerButton;
+    public Button updateCustomerButton;
+    public Button deleteCustomerButton;
+    public Button exitCustomerButton;
+    public Label custStatusLabel;
 
     public static User getCurrentUser() {
         return currentUser;
@@ -79,10 +100,12 @@ public class MainController implements Initializable {
         weekRadio.setToggleGroup(viewToggleGroup);
         monthRadio.setToggleGroup(viewToggleGroup);
         allApptsRadio.setToggleGroup(viewToggleGroup);
-        saveButton.setDisable(true);
+        saveApptButton.setDisable(true);
         statusLabel.setText("Currently logged in as: " + getCurrentUser().getUserName());
+        custStatusLabel.setText("Currently logged in as: " + getCurrentUser().getUserName());
         try {
             setApptsTable(AppointmentDAO.getAllAppointments());
+            setCustomerTable(CustomerDAO.getAllCustomers());
 
             contactsList = ContactDAO.getAllContacts();
             contactNameList = FXCollections.observableArrayList();
@@ -162,27 +185,23 @@ public class MainController implements Initializable {
         contactColumn.setCellValueFactory(new PropertyValueFactory<>("contact"));
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
         startColumn.setCellValueFactory(new PropertyValueFactory<Appointment, String>("start"));
-        /*startColumn.setCellFactory(column -> {
-            TableCell<Appointment, ZonedDateTime> cell = new TableCell<Appointment, ZonedDateTime>() {
-                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-                @Override
-                protected void updateItem(ZonedDateTime item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if(empty) {
-                        setText(null);
-                    }
-                    else {
-                        this.setText(dtf.format(item));
-                    }
-                }
-            };
-            return cell;
-        });*/
         endColumn.setCellValueFactory(new PropertyValueFactory<Appointment, String>("end"));
         customerColumn.setCellValueFactory(new PropertyValueFactory<>("customerID"));
         userIDColumn.setCellValueFactory(new PropertyValueFactory<>("userID"));
         appointmentsTable.getSortOrder().add(appointmentIDColumn);
+    }
+
+    public void setCustomerTable(ObservableList<Customer> customerList){
+        customerTable.setItems(customerList);
+
+        customerIDColumn.setCellValueFactory(new PropertyValueFactory<>("customerID"));
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("customerName"));
+        addressColumn.setCellValueFactory(new PropertyValueFactory<>("address"));
+        postalCodeColumn.setCellValueFactory(new PropertyValueFactory<>("postalCode"));
+        phoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
+        divisionColumn.setCellValueFactory(new PropertyValueFactory<>("division"));
+        countryColumn.setCellValueFactory(new PropertyValueFactory<>("country"));
+        customerTable.getSortOrder().add(customerIDColumn);
     }
 
     public void populateApptFields() {
@@ -198,9 +217,24 @@ public class MainController implements Initializable {
             customerIDCombo.setValue(Integer.toString(appointmentsTable.getSelectionModel().getSelectedItem().getCustomerID()));
             startTimeCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getStartZDT().withZoneSameInstant(ZoneId.systemDefault()).toLocalTime().toString());
             endTimeCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getEndZDT().withZoneSameInstant(ZoneId.systemDefault()).toLocalTime().toString());
-            saveButton.setDisable(true);
-            updateButton.setDisable(false);
+            saveApptButton.setDisable(true);
+            updateApptButton.setDisable(false);
             newAppointmentButton.setDisable(false);
+        }
+    }
+
+    public void populateCustFields() {
+        if(!customerTable.getSelectionModel().isEmpty()) {
+            customerIDLabel.setText(Integer.toString(customerTable.getSelectionModel().getSelectedItem().getCustomerID()));
+            nameField.setText(customerTable.getSelectionModel().getSelectedItem().getCustomerName());
+            addressField.setText(customerTable.getSelectionModel().getSelectedItem().getAddress());
+            postalCodeField.setText(customerTable.getSelectionModel().getSelectedItem().getPostalCode());
+            phoneField.setText(customerTable.getSelectionModel().getSelectedItem().getPhone());
+            divisionCombo.setValue(customerTable.getSelectionModel().getSelectedItem().getDivision());
+            countryCombo.setValue(customerTable.getSelectionModel().getSelectedItem().getCountry());
+            saveCustomerButton.setDisable(true);
+            updateCustomerButton.setDisable(false);
+            newCustomerButton.setDisable(false);
         }
     }
 
@@ -215,10 +249,27 @@ public class MainController implements Initializable {
         return max + 1;
     }
 
+    public static int nextCustomerID() throws SQLException {
+        ObservableList<Customer> allCustomers = CustomerDAO.getAllCustomers();
+        int max = 0;
+        for (int i = 0; i < allCustomers.size(); i++){
+            if (allCustomers.get(i).getCustomerID() > max){
+                max = allCustomers.get(i).getCustomerID();
+            }
+        }
+        return max + 1;
+    }
+
     public void newAppointmentClicked() throws SQLException {
         clearApptFields();
         appointmentIDLabel.setText(Integer.toString(nextAppointmentID()));
         newAppointmentButton.setDisable(true);
+    }
+
+    public void newCustomerClicked() throws SQLException {
+        clearCustFields();
+        customerIDLabel.setText((Integer.toString(nextCustomerID())));
+        newCustomerButton.setDisable(true);
     }
 
     public void clearApptFields(){
@@ -233,9 +284,22 @@ public class MainController implements Initializable {
         endTimeCombo.setValue("");
         userIDCombo.setValue("");
         customerIDCombo.setValue("");
-        saveButton.setDisable(false);
-        updateButton.setDisable(true);
+        saveApptButton.setDisable(false);
+        updateApptButton.setDisable(true);
         appointmentsTable.getSelectionModel().clearSelection();
+    }
+
+    public void clearCustFields(){
+        customerIDLabel.setText("");
+        nameField.clear();
+        addressField.clear();
+        postalCodeField.clear();
+        phoneField.clear();
+        divisionCombo.setValue("");
+        countryCombo.setValue("");
+        saveCustomerButton.setDisable(false);
+        updateCustomerButton.setDisable(true);
+        customerTable.getSelectionModel().clearSelection();
     }
 
     public void saveApptClicked() throws SQLException {
@@ -254,8 +318,8 @@ public class MainController implements Initializable {
         setApptsTable(AppointmentDAO.getAllAppointments());
         clearApptFields();
         allApptsRadio.setSelected(true);
-        saveButton.setDisable(true);
-        updateButton.setDisable(false);
+        saveApptButton.setDisable(true);
+        updateApptButton.setDisable(false);
         newAppointmentButton.setDisable(false);
     }
 

@@ -53,7 +53,66 @@
   <tabs>
       <Tab text="Customers">
          <content>
-            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <VBox prefHeight="687.0" prefWidth="1160.0">
+                     <children>
+                        <TableView fx:id="customerTable" onMouseClicked="#populateCustFields" prefHeight="328.0" prefWidth="1160.0">
+                          <columns>
+                            <TableColumn fx:id="customerIDColumn" prefWidth="75.0" text="Customer ID" />
+                            <TableColumn fx:id="nameColumn" prefWidth="132.0" text="Name" />
+                              <TableColumn fx:id="addressColumn" prefWidth="298.0" text="Address" />
+                              <TableColumn fx:id="postalCodeColumn" prefWidth="137.0" text="Postal Code" />
+                              <TableColumn fx:id="phoneColumn" prefWidth="170.0" text="Phone" />
+                              <TableColumn fx:id="countryColumn" prefWidth="196.0" text="Country" />
+                              <TableColumn fx:id="divisionColumn" prefWidth="151.0" text="Division" />
+                          </columns>
+                        </TableView>
+                        <Pane prefHeight="44.0" prefWidth="1160.0" />
+                        <HBox prefHeight="275.0" prefWidth="1160.0">
+
+                           <children>
+                              <Pane prefHeight="200.0" prefWidth="387.0">
+                                 <children>
+                                    <Label layoutX="127.0" layoutY="14.0" text="Customer ID" />
+                                    <Label layoutX="160.0" layoutY="74.0" text="Name" />
+                                    <Label layoutX="145.0" layoutY="129.0" text="Address" />
+                                    <Label layoutX="128.0" layoutY="193.0" text="Postal Code" />
+                                    <TextField fx:id="nameField" layoutX="224.0" layoutY="70.0" />
+                                    <TextField fx:id="addressField" layoutX="224.0" layoutY="125.0" />
+                                    <TextField fx:id="postalCodeField" layoutX="224.0" layoutY="189.0" />
+                                    <Label fx:id="customerIDLabel" layoutX="224.0" layoutY="14.0" text="Auto-gen" />
+                                 </children>
+                              </Pane>
+                              <Pane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="386.0">
+                                 <children>
+                                    <TextField fx:id="phoneField" layoutX="223.0" layoutY="14.0" />
+                                    <ComboBox fx:id="countryCombo" layoutX="222.0" layoutY="71.0" prefWidth="150.0" />
+                                    <ComboBox fx:id="divisionCombo" layoutX="222.0" layoutY="125.0" prefWidth="150.0" />
+                                    <Label layoutX="159.0" layoutY="18.0" text="Phone" />
+                                    <Label layoutX="150.0" layoutY="75.0" text="Country" />
+                                    <Label layoutX="150.0" layoutY="129.0" text="Division" />
+                                 </children>
+                              </Pane>
+                              <Pane layoutX="210.0" layoutY="10.0" prefHeight="200.0" prefWidth="387.0">
+                                 <children>
+                                    <Button fx:id="newCustomerButton" onAction="#newCustomerClicked" layoutX="123.0" layoutY="72.0" mnemonicParsing="false" prefWidth="160.0" text="+Create New Customer" />
+                                    <Button fx:id="saveCustomerButton" layoutX="123.0" layoutY="113.0" mnemonicParsing="false" prefWidth="69.0" text="Save" />
+                                    <Button fx:id="updateCustomerButton" layoutX="214.0" layoutY="113.0" mnemonicParsing="false" prefWidth="69.0" text="Update" />
+                                    <Button fx:id="deleteCustomerButton" layoutX="123.0" layoutY="156.0" mnemonicParsing="false" prefWidth="69.0" text="Delete" />
+                                    <Button fx:id="exitCustomerButton" layoutX="214.0" layoutY="156.0" mnemonicParsing="false" prefWidth="69.0" text="Exit" />
+                                 </children>
+                              </Pane>
+                           </children>
+                        </HBox>
+                        <Pane prefHeight="41.0" prefWidth="1160.0">
+                           <children>
+                              <Label fx:id="custStatusLabel" layoutX="14.0" layoutY="12.0" text="Logged in as:" />
+                           </children>
+                        </Pane>
+                     </children>
+                  </VBox>
+               </children></AnchorPane>
          </content>
       </Tab>
     <Tab closable="false" text="Appointments">
@@ -121,11 +180,11 @@
                                     <ComboBox fx:id="userIDCombo" layoutX="194.0" layoutY="80.0" prefWidth="150.0" />
                                     <Label layoutX="88.0" layoutY="33.0" text="Customer ID" />
                                     <Label layoutX="115.0" layoutY="84.0" text="User ID" />
-                                    <Button fx:id="saveButton" onAction="#saveApptClicked" layoutX="112.0" layoutY="183.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="69.0" text="Save" />
-                                    <Button fx:id="updateButton" onAction="#updateApptClicked" layoutX="205.0" layoutY="183.0" mnemonicParsing="false" prefWidth="69.0" text="Update" />
-                                    <Button fx:id="deleteButton" onAction="#deleteApptClicked" layoutX="112.0" layoutY="224.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="69.0" text="Delete" />
-                                    <Button fx:id="exitButton" onAction="#exitClicked" layoutX="205.0" layoutY="224.0" mnemonicParsing="false" prefWidth="69.0" text="Exit" />
-                                    <Button fx:id="newAppointmentButton" onAction="#newAppointmentClicked" layoutX="112.0" layoutY="139.0" mnemonicParsing="false" text="+ Create New Appointment" />
+                                    <Button fx:id="saveApptButton" layoutX="112.0" layoutY="183.0" mnemonicParsing="false" onAction="#saveApptClicked" prefHeight="25.0" prefWidth="69.0" text="Save" />
+                                    <Button fx:id="updateApptButton" layoutX="205.0" layoutY="183.0" mnemonicParsing="false" onAction="#updateApptClicked" prefWidth="69.0" text="Update" />
+                                    <Button fx:id="deleteApptButton" layoutX="112.0" layoutY="224.0" mnemonicParsing="false" onAction="#deleteApptClicked" prefHeight="25.0" prefWidth="69.0" text="Delete" />
+                                    <Button fx:id="exitApptButton" layoutX="205.0" layoutY="224.0" mnemonicParsing="false" onAction="#exitClicked" prefWidth="69.0" text="Exit" />
+                                    <Button fx:id="newAppointmentButton" layoutX="112.0" layoutY="139.0" mnemonicParsing="false" onAction="#newAppointmentClicked" text="+ Create New Appointment" />
                                  </children>
                               </Pane>
                            </children>
