@@ -8,8 +8,8 @@ public class DBConnection {
 
     private static final String dbName ="client_schedule";
     private static final String DB_URL="jdbc:mysql://localhost:3306/"+ dbName;
-    private static final String username="rob";
-    private static final String password="mobius42";
+    private static final String username="sqlUser";
+    private static final String password="Passw0rd!";
     static Connection cxn;
 
     public static void makeConnection() throws SQLException{

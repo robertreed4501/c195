@@ -18,6 +18,7 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.time.*;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 
 public class MainController implements Initializable {
@@ -106,26 +107,28 @@ public class MainController implements Initializable {
         try {
             setApptsTable(AppointmentDAO.getAllAppointments());
             setCustomerTable(CustomerDAO.getAllCustomers());
-
             contactsList = ContactDAO.getAllContacts();
             contactNameList = FXCollections.observableArrayList();
-            for(int i = 0; i < contactsList.size(); i++){
+            ContactDAO.getAllContacts().stream().forEach(contact -> contactNameList.add(contact.getContactName()));
+            /*for(int i = 0; i < contactsList.size(); i++){
                 contactNameList.add(contactsList.get(i).getContactName());
-            }
+            }*/
             contactCombo.setItems(contactNameList);
 
             userList = UserDAO.getAllUsers();
             userIDList = FXCollections.observableArrayList();
-            for(int i = 0; i < userList.size(); i++){
+            UserDAO.getAllUsers().stream().forEach(user -> userIDList.add(Integer.toString(user.getUserID())));
+            /*for(int i = 0; i < userList.size(); i++){
                 userIDList.add(Integer.toString(userList.get(i).getUserID()));
-            }
+            }*/
             userIDCombo.setItems(userIDList);
 
             customerList = CustomerDAO.getAllCustomers();
             customerIDList = FXCollections.observableArrayList();
-            for(int i = 0; i < customerList.size(); i++){
+            CustomerDAO.getAllCustomers().stream().forEach(customer -> customerIDList.add(Integer.toString(customer.getCustomerID())));
+            /*for(int i = 0; i < customerList.size(); i++){
                 customerIDList.add(Integer.toString(customerList.get(i).getCustomerID()));
-            }
+            }*/
             customerIDCombo.setItems(customerIDList);
 
             apptTimes = FXCollections.observableArrayList();
