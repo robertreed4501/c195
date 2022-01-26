@@ -1,10 +1,7 @@
 package Controller;
 
 import DAO.*;
-import Model.Appointment;
-import Model.Contact;
-import Model.Customer;
-import Model.User;
+import Model.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -94,7 +91,7 @@ public class MainController implements Initializable {
     }
 
     @Override
-    public void initialize(URL location, ResourceBundle resources){
+    public void initialize(URL location, ResourceBundle resources){  //TODO: separate and define functions to refresh combo box lists on click
         //***Set up Appointments Tab***//
         offset = ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now());
         appointmentIDLabel.setText("");
@@ -131,6 +128,17 @@ public class MainController implements Initializable {
             }*/
             customerIDCombo.setItems(customerIDList);
 
+            ObservableList<String> allCountries = FXCollections.observableArrayList();
+            CountryDAO.getAllCountryNames().stream().forEach(country -> allCountries.add(country));
+            countryCombo.setItems(allCountries);
+
+            ObservableList<String> allDivisions = FXCollections.observableArrayList();
+            DivisionDAO.getAllDivisionNames().stream().forEach(division -> allDivisions.add(division));
+            divisionCombo.setItems(allDivisions);
+
+
+            //TODO fix apptTimes list for timezones.
+
             apptTimes = FXCollections.observableArrayList();
             for (int i = 0; i < 14; i++){
                 for (int j = 0; j < 4; j++){
@@ -143,14 +151,14 @@ public class MainController implements Initializable {
             endTimeCombo.setItems(apptTimes);
             appointmentsTable.getSortOrder().add(appointmentIDColumn);
 
-
-                ObservableList<Appointment> allAppointments = AppointmentDAO.getAllAppointments();
-                for (int i = 0; i < allAppointments.size(); i++){
-                    if (ZonedDateTime.now().plusMinutes(15).isAfter(allAppointments.get(i).getStartZDT()) && ZonedDateTime.now().isBefore(allAppointments.get(i).getStartZDT())){
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION, "You have an appointment soon");
-                        alert.showAndWait();
-                    }
+                //TODO give more information in this alert.  logic works, but needs appointment ID, date and time.
+            ObservableList<Appointment> allAppointments = AppointmentDAO.getAllAppointments();
+            for (int i = 0; i < allAppointments.size(); i++){
+                if (ZonedDateTime.now().plusMinutes(15).isAfter(allAppointments.get(i).getStartZDT()) && ZonedDateTime.now().isBefore(allAppointments.get(i).getStartZDT())){
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION, "You have an appointment soon");
+                    alert.showAndWait();
                 }
+            }
 
         } catch (SQLException throwables) {
         throwables.printStackTrace();
@@ -273,6 +281,7 @@ public class MainController implements Initializable {
         clearCustFields();
         customerIDLabel.setText((Integer.toString(nextCustomerID())));
         newCustomerButton.setDisable(true);
+        saveCustomerButton.setDisable(false);
     }
 
     public void clearApptFields(){
@@ -300,12 +309,13 @@ public class MainController implements Initializable {
         phoneField.clear();
         divisionCombo.setValue("");
         countryCombo.setValue("");
-        saveCustomerButton.setDisable(false);
+        saveCustomerButton.setDisable(true);
         updateCustomerButton.setDisable(true);
         customerTable.getSelectionModel().clearSelection();
     }
 
-    public void saveApptClicked() throws SQLException {
+    public void saveApptClicked() throws SQLException { //TODO write form validation for all forms and implement at beginning of this method and updateApptClicked
+
         int apptID = nextAppointmentID();
         String title = titleField.getText();
         String description = descriptionField.getText();
@@ -317,6 +327,14 @@ public class MainController implements Initializable {
         int userID = Integer.parseInt(userIDCombo.getValue());
         int contactID = getContactID(contactCombo.getValue());
 
+
+        if(hasConflict(new Appointment(apptID, customerID, userID, Integer.toString(contactID), title, description, location, type, start, end))){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Customer " + CustomerDAO.getCustomerByID(customerID).getCustomerName() + " already has an appointment scheduled at this time.  Choose another time.");
+            alert.showAndWait();
+            return;
+        }
+
         AppointmentDAO.createNewAppointment(apptID, title, description, location, type, start, end, customerID, userID, contactID);
         setApptsTable(AppointmentDAO.getAllAppointments());
         clearApptFields();
@@ -324,6 +342,7 @@ public class MainController implements Initializable {
         saveApptButton.setDisable(true);
         updateApptButton.setDisable(false);
         newAppointmentButton.setDisable(false);
+
     }
 
     public int getContactID(String contactName) throws SQLException {
@@ -341,29 +360,136 @@ public class MainController implements Initializable {
         stage.close();
     }
 
-    public void deleteApptClicked() throws SQLException {
-        int apptID = appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID();
-        AppointmentDAO.delete(apptID);
-        setApptsTable(AppointmentDAO.getAllAppointments());
-        clearApptFields();
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Appointment ID: " + apptID + " has been cancelled.");
-        alert.showAndWait();
+    public void exitCustomerClicked(ActionEvent actionEvent) throws SQLException {
+        DBConnection.closeConnection();
+        Stage stage = (Stage) ((Node)actionEvent.getSource()).getScene().getWindow();
+        stage.close();
     }
 
-    public void updateApptClicked(ActionEvent actionEvent) throws SQLException {
-        int apptID = appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID();
-        String title = titleField.getText();
-        String description = descriptionField.getText();
-        String location = locationField.getText();
-        String type = typeField.getText();
-        ZonedDateTime start = ZonedDateTime.of(dateFieldPicker.getValue(), LocalTime.parse(startTimeCombo.getValue()), ZoneId.systemDefault());
-        ZonedDateTime end = ZonedDateTime.of(dateFieldPicker.getValue(), LocalTime.parse(endTimeCombo.getValue()), ZoneId.systemDefault());
-        int customerID = Integer.parseInt(customerIDCombo.getValue());
-        int userID = Integer.parseInt(userIDCombo.getValue());
-        int contactID = getContactID(contactCombo.getValue());
-        AppointmentDAO.updateAppointment(apptID, title, description, location, type, start, end, customerID, userID, contactID);
-        setApptsTable(AppointmentDAO.getAllAppointments());
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Appointment ID: " + apptID + " has been updated.");
-        alert.showAndWait();
+    public void deleteApptClicked() throws SQLException {
+        try {
+            int apptID = appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID();
+            AppointmentDAO.delete(apptID);
+            setApptsTable(AppointmentDAO.getAllAppointments());
+            clearApptFields();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Appointment ID: " + apptID + " has been cancelled.");
+            alert.showAndWait();
+        }
+        catch (NullPointerException e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("You must select an appointment to delete before pressing the delete button.");
+            alert.showAndWait();
+        }
     }
+
+    public void updateApptClicked(ActionEvent actionEvent) throws SQLException { //TODO implement form validation
+        try {
+            int apptID = appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID();
+            String title = titleField.getText();
+            String description = descriptionField.getText();
+            String location = locationField.getText();
+            String type = typeField.getText();
+            ZonedDateTime start = ZonedDateTime.of(dateFieldPicker.getValue(), LocalTime.parse(startTimeCombo.getValue()), ZoneId.systemDefault());
+            ZonedDateTime end = ZonedDateTime.of(dateFieldPicker.getValue(), LocalTime.parse(endTimeCombo.getValue()), ZoneId.systemDefault());
+            int customerID = Integer.parseInt(customerIDCombo.getValue());
+            int userID = Integer.parseInt(userIDCombo.getValue());
+            int contactID = getContactID(contactCombo.getValue());
+            AppointmentDAO.updateAppointment(apptID, title, description, location, type, start, end, customerID, userID, contactID);
+            setApptsTable(AppointmentDAO.getAllAppointments());
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Appointment ID: " + apptID + " has been updated.");
+            alert.showAndWait();
+        }
+        catch (NullPointerException e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("You must select an appointment to update before pressing the update button.");
+            alert.showAndWait();
+        }
+    }
+
+    public void onCountrySelected() throws SQLException {
+
+            ObservableList<String> divisions = FXCollections.observableArrayList();
+            DivisionDAO.getDivisionsOfCountry((String)countryCombo.getSelectionModel().getSelectedItem()).stream().forEach(division -> divisions.add(division));
+            divisionCombo.setItems(divisions);
+
+    }
+
+    public void updateCustomerClicked() throws SQLException { //TODO form validation
+        int divisionID = 0;
+        ObservableList<Division> allDivisions = DivisionDAO.getAllDivisions();
+        for (int i = 0; i < allDivisions.size(); i++){
+            if (allDivisions.get(i).getDivision().equals(divisionCombo.getSelectionModel().getSelectedItem().toString())){
+                divisionID = allDivisions.get(i).getDivisionID();
+                break;
+            }
+        }
+        CustomerDAO.updateCustomer(nameField.getText(), addressField.getText(), postalCodeField.getText(), phoneField.getText(), getCurrentUser().getUserName(), divisionID, customerIDLabel.getText());
+        setCustomerTable(CustomerDAO.getAllCustomers());
+    }
+
+    public void saveCustomerClicked() throws SQLException { //TODO form validation
+        int divisionID = 0;
+        ObservableList<Division> allDivisions = DivisionDAO.getAllDivisions();
+        for (int i = 0; i < allDivisions.size(); i++){
+            if (allDivisions.get(i).getDivision().equals(divisionCombo.getSelectionModel().getSelectedItem().toString())){
+                divisionID = allDivisions.get(i).getDivisionID();
+                break;
+            }
+        }
+        CustomerDAO.createNewCustomer(Integer.parseInt(customerIDLabel.getText()), nameField.getText(),addressField.getText(), postalCodeField.getText(), phoneField.getText(), getCurrentUser().getUserName(), divisionID );
+        setCustomerTable(CustomerDAO.getAllCustomers());
+        saveCustomerButton.setDisable(true);
+        updateCustomerButton.setDisable(false);
+        newCustomerButton.setDisable(false);
+        clearCustFields();
+    }
+
+    public void deleteCustomerClicked() throws SQLException {
+        if(customerTable.getSelectionModel().isEmpty()) return;
+        if(!hasAppointments(customerTable.getSelectionModel().getSelectedItem().getCustomerID())) {
+            CustomerDAO.deleteCustomer(customerTable.getSelectionModel().getSelectedItem().getCustomerID());
+        }
+        else{
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Cannot Delete Customer\nCustomer has appointments scheduled.\nDelete customer's appointments first.");
+            alert.showAndWait();
+        }
+        setCustomerTable(CustomerDAO.getAllCustomers());
+        saveCustomerButton.setDisable(true);
+        updateCustomerButton.setDisable(false);
+        newCustomerButton.setDisable(false);
+        clearCustFields();
+    }
+
+    public boolean hasAppointments(int customerID) throws SQLException {
+        return AppointmentDAO.getAllAppointments().stream().anyMatch(appointment -> customerID == appointment.getCustomerID());
+    }
+
+    public boolean hasConflict(Appointment appointment) throws SQLException {
+        /*Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(Integer.toString(AppointmentDAO.getAppointmentsByCustomer(CustomerDAO.getCustomerByID(appointment.getCustomerID())).size()));
+        alert.showAndWait();*/
+        ObservableList<Appointment> customersAppointments = AppointmentDAO.getAppointmentsByCustomer(CustomerDAO.getCustomerByID(appointment.getCustomerID()));
+        boolean hasConflict = false;
+        for (int i = 0; i < customersAppointments.size(); i++) {
+            Instant startInstant = appointment.getStartZDT().toInstant();
+            Instant endInstant = appointment.getEndZDT().toInstant();
+            Instant startListInstant = customersAppointments.get(i).getStartZDT().withZoneSameLocal(ZoneId.of("Europe/London")).toInstant();
+            Instant endListInstant = customersAppointments.get(i).getEndZDT().withZoneSameLocal(ZoneId.of("Europe/London")).toInstant();
+
+            boolean startTimeConflict = startInstant.isBefore(endListInstant) && startInstant.isAfter(startListInstant);
+            boolean endTimeConflict = endInstant.isBefore(endListInstant) && endInstant.isAfter(startListInstant);
+            boolean startTimeConflict2 = startListInstant.isBefore(endInstant) && startListInstant.isAfter(startInstant);
+            boolean endTimeConflict2 = endListInstant.isBefore(endInstant) && endListInstant.isAfter(startInstant);
+            /*System.out.println(startInstant.toString() + " " + endInstant.toString() + " " + startListInstant.toString() + " " + endListInstant.toString());
+            System.out.println(Boolean.toString(startTimeConflict) + Boolean.toString(endTimeConflict) + Boolean.toString(startTimeConflict2) + Boolean.toString(endTimeConflict2));*/
+            if(startTimeConflict || startTimeConflict2 || endTimeConflict || endTimeConflict2) hasConflict = true;
+
+        }
+        /*alert.setContentText(Boolean.toString(hasConflict));
+        alert.showAndWait();*/
+        return hasConflict;
+    }
+
+
 }

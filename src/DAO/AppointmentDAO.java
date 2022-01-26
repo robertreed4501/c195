@@ -2,6 +2,7 @@ package DAO;
 
 import Controller.MainController;
 import Model.Appointment;
+import Model.Customer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -51,8 +52,8 @@ public class AppointmentDAO {
             String location = resultSet.getString("Location");
             String contact = resultSet.getString("Contact");
             String type = resultSet.getString("Type");
-            ZonedDateTime start = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("Start"), dtf), ZoneId.systemDefault());
-            ZonedDateTime end = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("End"), dtf), ZoneId.systemDefault());
+            ZonedDateTime start = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("Start"), dtf), ZoneId.of("Europe/London"));
+            ZonedDateTime end = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("End"), dtf), ZoneId.of("Europe/London"));
             int customerID = resultSet.getInt("Customer_ID");
             int userID = resultSet.getInt("User_ID");
 
@@ -73,7 +74,7 @@ public class AppointmentDAO {
             String location = resultSet.getString("Location");
             String contact = resultSet.getString("Contact");
             String type = resultSet.getString("Type");
-            ZonedDateTime start = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("Start"), dtf), ZoneId.systemDefault());
+            ZonedDateTime start = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("Start"), dtf), ZoneId.of("Europe/London"));
             ZonedDateTime end = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("End"), dtf), ZoneId.systemDefault());
             int customerID = resultSet.getInt("Customer_ID");
             int userID = resultSet.getInt("User_ID");
@@ -85,17 +86,35 @@ public class AppointmentDAO {
     }
 
     public static void createNewAppointment(int apptID, String title, String description, String location, String type, ZonedDateTime start, ZonedDateTime end, int customerID, int userID, int contactID) throws SQLException {
-        Query.makeQuery("INSERT INTO appointments VALUES("+Integer.toString(apptID) +",'"+title+"','"+description+"','"+location+"','"+type+"','"+dtf.format(start.withZoneSameInstant(ZoneId.of("UTC")))+"','"+dtf.format(end.withZoneSameInstant(ZoneId.of("UTC")))+"', NOW(),'"+MainController.getCurrentUser().getUserName()+"', NOW(),'"+MainController.getCurrentUser().getUserName()+"',"+Integer.toString(customerID)+","+Integer.toString(userID)+","+Integer.toString(contactID)+")");
-        Query.getResult();
+        Query.makeQuery("INSERT INTO appointments VALUES("+Integer.toString(apptID) +",'"+title+"','"+description+"','"+location+"','"+type+"','"+dtf.format(start.withZoneSameInstant(ZoneId.of("Europe/London")))+"','"+dtf.format(end.withZoneSameInstant(ZoneId.of("Europe/London")))+"', NOW(),'"+MainController.getCurrentUser().getUserName()+"', NOW(),'"+MainController.getCurrentUser().getUserName()+"',"+Integer.toString(customerID)+","+Integer.toString(userID)+","+Integer.toString(contactID)+")");
     }
 
     public static void delete(int apptID) {
         Query.makeQuery("DELETE FROM appointments WHERE Appointment_ID="+Integer.toString(apptID));
-        Query.getResult();
     }
 
     public static void updateAppointment(int apptID, String title, String description, String location, String type, ZonedDateTime start, ZonedDateTime end, int customerID, int userID, int contactID) {
-        Query.makeQuery("UPDATE appointments SET Title='"+title+"',Description='"+description+"',Location='"+location+"',Type='"+type+"',Start='"+dtf.format(start.withZoneSameInstant(ZoneId.of("UTC")))+"',End='"+dtf.format(end.withZoneSameInstant(ZoneId.of("UTC")))+"',Last_Update='"+dtf.format(ZonedDateTime.now(ZoneId.of("UTC")))+"',Last_Updated_By='"+MainController.getCurrentUser().getUserName()+"',Customer_ID="+Integer.toString(customerID)+",User_ID="+Integer.toString(userID)+",Contact_ID="+Integer.toString(contactID)+" WHERE Appointment_ID="+apptID);
-        Query.getResult();
+        Query.makeQuery("UPDATE appointments SET Title='"+title+"',Description='"+description+"',Location='"+location+"',Type='"+type+"',Start='"+dtf.format(start.withZoneSameInstant(ZoneId.of("Europe/London")))+"',End='"+dtf.format(end.withZoneSameInstant(ZoneId.of("Europe/London")))+"',Last_Update='"+dtf.format(ZonedDateTime.now(ZoneId.of("UTC")))+"',Last_Updated_By='"+MainController.getCurrentUser().getUserName()+"',Customer_ID="+Integer.toString(customerID)+",User_ID="+Integer.toString(userID)+",Contact_ID="+Integer.toString(contactID)+" WHERE Appointment_ID="+apptID);
+    }
+
+    public static ObservableList<Appointment> getAppointmentsByCustomer(Customer customer) throws SQLException {
+        ObservableList<Appointment> customersAppointments = FXCollections.observableArrayList();
+        Query.makeQuery("SELECT * FROM appointments as a JOIN customers as b ON a.Customer_ID = b.Customer_ID WHERE a.Customer_ID=" + customer.getCustomerID());
+        ResultSet rs = Query.getResult();
+        while(rs.next()){
+            int appointmentID = rs.getInt("Appointment_ID");
+            String title = rs.getString("Title");
+            String description = rs.getString("Description");
+            String location = rs.getString("Location");
+            int contactID = rs.getInt("Contact_ID");
+            String type = rs.getString("Type");
+            ZonedDateTime start = ZonedDateTime.of(LocalDateTime.parse(rs.getString("Start"), dtf), ZoneId.systemDefault());
+            ZonedDateTime end = ZonedDateTime.of(LocalDateTime.parse(rs.getString("End"), dtf), ZoneId.systemDefault());
+            int customerID = rs.getInt("Customer_ID");
+            int userID = rs.getInt("User_ID");
+
+            customersAppointments.add(new Appointment(appointmentID, customerID, userID, ContactDAO.getContactNameByID(contactID), title, description, location, type, start, end));
+        }
+        return customersAppointments;
     }
 }

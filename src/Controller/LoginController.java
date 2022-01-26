@@ -55,7 +55,7 @@ public class LoginController implements Initializable{
         Parent root = FXMLLoader.load(getClass().getResource("/View/mainform.fxml"));
         Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
         stage.setTitle("Appointment Scheduler");
-        stage.setScene(new Scene(root, 1160, 716));
+        stage.setScene(new Scene(root, 1160, 638));
         stage.show();
     }
 

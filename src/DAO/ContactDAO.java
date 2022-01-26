@@ -23,5 +23,13 @@ public class ContactDAO {
         return allContacts;
     }
 
+    public static String getContactNameByID(int contactID) throws SQLException {
+        String name;
+        Query.makeQuery("SELECT Contact_Name FROM contacts WHERE Contact_ID=" + contactID);
+        ResultSet rs = Query.getResult();
+        rs.next();
+        name = rs.getString("Contact_Name");
+        return name;
 
+    }
 }

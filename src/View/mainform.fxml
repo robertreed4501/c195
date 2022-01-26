@@ -49,7 +49,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="716.0" prefWidth="1160.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.MainController">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="638.0" prefWidth="1160.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.MainController">
   <tabs>
       <Tab text="Customers">
          <content>
@@ -57,7 +57,7 @@
                <children>
                   <VBox prefHeight="687.0" prefWidth="1160.0">
                      <children>
-                        <TableView fx:id="customerTable" onMouseClicked="#populateCustFields" prefHeight="328.0" prefWidth="1160.0">
+                        <TableView fx:id="customerTable" onMouseClicked="#populateCustFields" prefHeight="250.0" prefWidth="1160.0">
                           <columns>
                             <TableColumn fx:id="customerIDColumn" prefWidth="75.0" text="Customer ID" />
                             <TableColumn fx:id="nameColumn" prefWidth="132.0" text="Name" />
@@ -65,7 +65,7 @@
                               <TableColumn fx:id="postalCodeColumn" prefWidth="137.0" text="Postal Code" />
                               <TableColumn fx:id="phoneColumn" prefWidth="170.0" text="Phone" />
                               <TableColumn fx:id="countryColumn" prefWidth="196.0" text="Country" />
-                              <TableColumn fx:id="divisionColumn" prefWidth="151.0" text="Division" />
+                              <TableColumn fx:id="divisionColumn" prefWidth="148.0" text="Division" />
                           </columns>
                         </TableView>
                         <Pane prefHeight="44.0" prefWidth="1160.0" />
@@ -87,8 +87,8 @@
                               <Pane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="386.0">
                                  <children>
                                     <TextField fx:id="phoneField" layoutX="223.0" layoutY="14.0" />
-                                    <ComboBox fx:id="countryCombo" layoutX="222.0" layoutY="71.0" prefWidth="150.0" />
-                                    <ComboBox fx:id="divisionCombo" layoutX="222.0" layoutY="125.0" prefWidth="150.0" />
+                                    <ComboBox fx:id="countryCombo" layoutX="222.0" layoutY="71.0" onMouseClicked="#onCountrySelected" prefWidth="150.0" />
+                                    <ComboBox fx:id="divisionCombo" layoutX="222.0" layoutY="125.0" onMouseClicked="#onCountrySelected" prefWidth="150.0" />
                                     <Label layoutX="159.0" layoutY="18.0" text="Phone" />
                                     <Label layoutX="150.0" layoutY="75.0" text="Country" />
                                     <Label layoutX="150.0" layoutY="129.0" text="Division" />
@@ -96,11 +96,11 @@
                               </Pane>
                               <Pane layoutX="210.0" layoutY="10.0" prefHeight="200.0" prefWidth="387.0">
                                  <children>
-                                    <Button fx:id="newCustomerButton" onAction="#newCustomerClicked" layoutX="123.0" layoutY="72.0" mnemonicParsing="false" prefWidth="160.0" text="+Create New Customer" />
-                                    <Button fx:id="saveCustomerButton" layoutX="123.0" layoutY="113.0" mnemonicParsing="false" prefWidth="69.0" text="Save" />
-                                    <Button fx:id="updateCustomerButton" layoutX="214.0" layoutY="113.0" mnemonicParsing="false" prefWidth="69.0" text="Update" />
-                                    <Button fx:id="deleteCustomerButton" layoutX="123.0" layoutY="156.0" mnemonicParsing="false" prefWidth="69.0" text="Delete" />
-                                    <Button fx:id="exitCustomerButton" layoutX="214.0" layoutY="156.0" mnemonicParsing="false" prefWidth="69.0" text="Exit" />
+                                    <Button fx:id="newCustomerButton" layoutX="123.0" layoutY="72.0" mnemonicParsing="false" onAction="#newCustomerClicked" prefWidth="160.0" text="+Create New Customer" />
+                                    <Button fx:id="saveCustomerButton" layoutX="123.0" layoutY="113.0" mnemonicParsing="false" onAction="#saveCustomerClicked" prefWidth="69.0" text="Save" />
+                                    <Button fx:id="updateCustomerButton" layoutX="214.0" layoutY="113.0" mnemonicParsing="false" onAction="#updateCustomerClicked" prefWidth="69.0" text="Update" />
+                                    <Button fx:id="deleteCustomerButton" layoutX="123.0" layoutY="156.0" mnemonicParsing="false" onAction="#deleteCustomerClicked" prefWidth="69.0" text="Delete" />
+                                    <Button fx:id="exitCustomerButton" layoutX="214.0" layoutY="156.0" mnemonicParsing="false" onAction="#exitCustomerClicked" prefWidth="69.0" text="Exit" />
                                  </children>
                               </Pane>
                            </children>
@@ -121,7 +121,7 @@
                <children>
                   <VBox prefHeight="687.0" prefWidth="1160.0">
                      <children>
-                        <TableView fx:id="appointmentsTable" onMouseClicked="#populateApptFields" prefHeight="328.0" prefWidth="1160.0">
+                        <TableView fx:id="appointmentsTable" onMouseClicked="#populateApptFields" prefHeight="250.0" prefWidth="1160.0">
                           <columns>
                             <TableColumn fx:id="appointmentIDColumn" prefWidth="98.0" text="Appointment ID" />
                             <TableColumn fx:id="titleColumn" prefWidth="127.0" text="Title" />
@@ -131,8 +131,8 @@
                               <TableColumn fx:id="typeColumn" prefWidth="75.0" text="Type" />
                               <TableColumn fx:id="startColumn" prefWidth="132.0" text="Start Date and Time" />
                               <TableColumn fx:id="endColumn" prefWidth="112.0" text="End Date and Time" />
-                              <TableColumn fx:id="customerColumn" prefWidth="78.0" text="Customer" />
-                              <TableColumn fx:id="userIDColumn" prefWidth="52.0" text="User_ID" />
+                              <TableColumn fx:id="customerColumn" prefWidth="70.0" text="Customer" />
+                              <TableColumn fx:id="userIDColumn" prefWidth="57.0" text="User_ID" />
                           </columns>
                         </TableView>
                         <Pane prefHeight="44.0" prefWidth="1160.0">
