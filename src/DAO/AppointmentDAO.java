@@ -20,6 +20,7 @@ public class AppointmentDAO {
     public static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
+
     public static ObservableList<Appointment> getAllAppointments() throws SQLException {
         allAppointments = FXCollections.observableArrayList();
         Query.makeQuery("select a.Appointment_ID, a.Title, a.Description, a.Location, c.Contact_Name as Contact, a.Type, a.Start, a.End, a.Customer_ID, a.User_ID FROM appointments as a join contacts as c on a.Contact_ID=c.Contact_ID");

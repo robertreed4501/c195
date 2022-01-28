@@ -14,8 +14,11 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+
+import static DAO.AppointmentDAO.dtf;
 
 
 public class MainController implements Initializable {
@@ -151,14 +154,23 @@ public class MainController implements Initializable {
             dateFieldPicker.setEditable(false);
             //TODO fix apptTimes list for timezones.
 
-            apptTimes = FXCollections.observableArrayList();
+            ZonedDateTime openTime = ZonedDateTime.of(2022,1,1,8,0,0,0,ZoneId.of("America/New_York"));
+            ObservableList<String> apptTimes = FXCollections.observableArrayList();
+            while(openTime.getHour() < 22){
+                apptTimes.add(openTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalTime().toString());
+                openTime = openTime.plusMinutes(15);
+            }
+
+
+
+            /*apptTimes = FXCollections.observableArrayList();
             for (int i = 0; i < 14; i++){
                 for (int j = 0; j < 4; j++){
                     if (j == 0) apptTimes.add(Integer.toString((13 + i)%24) + ":00");
                     else apptTimes.add(Integer.toString((13 + i)%24) + ":" + Integer.toString(15 * j));
                 }
 
-            }
+            }*/
             startTimeCombo.setItems(apptTimes);
             endTimeCombo.setItems(apptTimes);
             appointmentsTable.getSortOrder().add(appointmentIDColumn);
@@ -169,7 +181,7 @@ public class MainController implements Initializable {
                 //System.out.println(ZonedDateTime.now().plusMinutes(15).toInstant() + ", " + allAppointments.get(i).getStartZDT().withZoneSameInstant(ZoneId.of("Europe/London")).toInstant());
                 if (ZonedDateTime.now().plusMinutes(15).isAfter(allAppointments.get(i).getStartZDT().withZoneSameLocal(ZoneId.of("Europe/London"))) && ZonedDateTime.now().isBefore(allAppointments.get(i).getStartZDT().withZoneSameLocal(ZoneId.of("Europe/London")))){
                     Alert alert = new Alert(Alert.AlertType.INFORMATION, "You have an appointment soon.\nAppointment ID: " + allAppointments.get(i).getAppointmentID() + "\nDate and Time: " +
-                            AppointmentDAO.dtf.format(allAppointments.get(i).getStartZDT().withZoneSameInstant(ZoneId.systemDefault())));
+                            dtf.format(allAppointments.get(i).getStartZDT().withZoneSameInstant(ZoneId.systemDefault())));
                     alert.showAndWait();
                 }
             }
@@ -291,6 +303,7 @@ public class MainController implements Initializable {
         clearApptFields();
         appointmentIDLabel.setText(Integer.toString(nextAppointmentID()));
         newAppointmentButton.setDisable(true);
+        saveApptButton.setDisable(false);
     }
 
     public void newCustomerClicked() throws SQLException {
@@ -312,7 +325,7 @@ public class MainController implements Initializable {
         endTimeCombo.setValue("");
         userIDCombo.setValue("");
         customerIDCombo.setValue("");
-        saveApptButton.setDisable(false);
+        saveApptButton.setDisable(true);
         updateApptButton.setDisable(true);
         appointmentsTable.getSelectionModel().clearSelection();
     }
@@ -331,7 +344,7 @@ public class MainController implements Initializable {
     }
 
     public void saveApptClicked() throws SQLException { //TODO write form validation for all forms and implement at beginning of this method and updateApptClicked
-
+        if(!validateAppointmentForms()) return;
         int apptID = nextAppointmentID();
         String title = titleField.getText();
         String description = descriptionField.getText();
@@ -359,6 +372,78 @@ public class MainController implements Initializable {
         updateApptButton.setDisable(false);
         newAppointmentButton.setDisable(false);
 
+    }
+
+    private boolean validateAppointmentForms() {
+        DateTimeFormatter tf = DateTimeFormatter.ofPattern("HH:mm");
+        if (appointmentIDLabel.getText().equals("")){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Appointment ID field is empty.  Click on the \"+Create New Appointment\" button to create a new Appointment ID");
+            alert.showAndWait();
+            return false;
+        }
+        if (titleField.getText().trim().equals("")){
+            isEmptyAlert("Title");
+            return false;
+        }
+        if (descriptionField.getText().trim().equals("")){
+            isEmptyAlert("Description");
+            return false;
+        }
+        if (locationField.getText().trim().equals("")){
+            isEmptyAlert("Location");
+            return false;
+        }
+        if (contactCombo.getSelectionModel().isEmpty()){
+            isEmptyAlert("Contact");
+            return false;
+        }
+        if (typeField.getText().trim().equals("")){
+            isEmptyAlert("Type");
+            return false;
+        }
+        try{
+            String date = dateFieldPicker.getValue().toString();
+        }
+        catch (NullPointerException e){
+            isEmptyAlert("Date");
+            return false;
+        }
+        if (startTimeCombo.getSelectionModel().isEmpty()){
+            isEmptyAlert("Start Time");
+            return false;
+        }
+        if (endTimeCombo.getSelectionModel().isEmpty()){
+            isEmptyAlert("End Time");
+            return false;
+        }
+        if (customerIDCombo.getSelectionModel().isEmpty()){
+            isEmptyAlert("Customer ID");
+            return false;
+        }
+        if (userIDCombo.getSelectionModel().isEmpty()){
+            isEmptyAlert("User ID");
+            return false;
+        }
+        if (LocalTime.parse(startTimeCombo.getValue(), tf).isAfter(LocalTime.parse(endTimeCombo.getValue(), tf))){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Start time must be before End time.");
+            alert.showAndWait();
+            return false;
+        }
+        if (LocalTime.parse(startTimeCombo.getValue(), tf).equals(LocalTime.parse(endTimeCombo.getValue(), tf))){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("End time must be after Start time.");
+            alert.showAndWait();
+            return false;
+        }
+        else return true;
+    }
+
+    public void isEmptyAlert(String field){
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(field + " field is empty.  All fields must be completed before saving or updating.");
+        alert.showAndWait();
     }
 
     public int getContactID(String contactName) throws SQLException {
@@ -401,6 +486,7 @@ public class MainController implements Initializable {
 
     public void updateApptClicked(ActionEvent actionEvent) throws SQLException { //TODO implement form validation
         try {
+            if(!validateAppointmentForms()) return;
             int apptID = appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID();
             String title = titleField.getText();
             String description = descriptionField.getText();
@@ -447,6 +533,7 @@ public class MainController implements Initializable {
     }
 
     public void saveCustomerClicked() throws SQLException { //TODO form validation
+        if(!validateCustomerForms()) return;
         int divisionID = 0;
         ObservableList<Division> allDivisions = DivisionDAO.getAllDivisions();
         for (int i = 0; i < allDivisions.size(); i++){
@@ -461,6 +548,35 @@ public class MainController implements Initializable {
         updateCustomerButton.setDisable(false);
         newCustomerButton.setDisable(false);
         clearCustFields();
+    }
+
+    private boolean validateCustomerForms() {
+        if(nameField.getText().trim().equals("")){
+            isEmptyAlert("Name");
+            return false;
+        }
+        if(addressField.getText().trim().equals("")){
+            isEmptyAlert("Address");
+            return false;
+        }
+        if(postalCodeField.getText().trim().equals("")){
+            isEmptyAlert("Postal Code");
+            return false;
+        }
+        if(phoneField.getText().trim().equals("")){
+            isEmptyAlert("Phone");
+            return false;
+        }
+        if(countryCombo.getSelectionModel().isEmpty()){
+            isEmptyAlert("Country");
+            return false;
+        }
+        if(divisionCombo.getSelectionModel().isEmpty()){
+            isEmptyAlert("Division");
+            return false;
+        }
+        else return true;
+
     }
 
     public void deleteCustomerClicked() throws SQLException {

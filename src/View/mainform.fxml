@@ -81,7 +81,7 @@
                                     <TextField fx:id="nameField" layoutX="224.0" layoutY="70.0" />
                                     <TextField fx:id="addressField" layoutX="224.0" layoutY="125.0" />
                                     <TextField fx:id="postalCodeField" layoutX="224.0" layoutY="189.0" />
-                                    <Label fx:id="customerIDLabel" layoutX="224.0" layoutY="14.0" text="Auto-gen" />
+                                    <Label fx:id="customerIDLabel" layoutX="224.0" layoutY="14.0" text="" />
                                  </children>
                               </Pane>
                               <Pane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="386.0">
