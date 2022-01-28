@@ -16,11 +16,10 @@ import java.sql.SQLException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 import static DAO.AppointmentDAO.dtf;
 
-
+/**This is the controller class for mainform(dot)fxml, the main form of the application.*/
 public class MainController implements Initializable {
     public TableView <Appointment> appointmentsTable;
     public RadioButton monthRadio;
@@ -76,8 +75,8 @@ public class MainController implements Initializable {
     public TextField postalCodeField;
     public Label customerIDLabel;
     public TextField phoneField;
-    public ComboBox countryCombo;
-    public ComboBox divisionCombo;
+    public ComboBox<String> countryCombo;
+    public ComboBox<String> divisionCombo;
     public Button newCustomerButton;
     public Button saveCustomerButton;
     public Button updateCustomerButton;
@@ -85,19 +84,28 @@ public class MainController implements Initializable {
     public Button exitCustomerButton;
     public Label custStatusLabel;
     
-
+    /**Gets the currently logged in user.
+     * Used by the DAOs to log user changes to DB.
+     *
+     * @return currentUser the currently logged in user*/
     public static User getCurrentUser() {
         return currentUser;
     }
 
+    /**Sets the currently logged in user.
+     * Used by the login form when a user successfully logs in.
+     *
+     * @param currentUser the User that has been logged in.*/
     public static void setCurrentUser(User currentUser) {
         MainController.currentUser = currentUser;
     }
 
+    /**Sets up initial state of main form.
+     * Sets up toggle groups, populates tables and combo boxes, etc.*/
     @Override
     public void initialize(URL location, ResourceBundle resources){
         //***Set up Appointments Tab***//
-        offset = ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now());
+        //offset = ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now());
         appointmentIDLabel.setText("");
         weekRadio.setToggleGroup(viewToggleGroup);
         monthRadio.setToggleGroup(viewToggleGroup);
@@ -152,7 +160,6 @@ public class MainController implements Initializable {
                 }
             });
             dateFieldPicker.setEditable(false);
-            //TODO fix apptTimes list for timezones.
 
             ZonedDateTime openTime = ZonedDateTime.of(2022,1,1,8,0,0,0,ZoneId.of("America/New_York"));
             ObservableList<String> apptTimes = FXCollections.observableArrayList();
@@ -161,16 +168,6 @@ public class MainController implements Initializable {
                 openTime = openTime.plusMinutes(15);
             }
 
-
-
-            /*apptTimes = FXCollections.observableArrayList();
-            for (int i = 0; i < 14; i++){
-                for (int j = 0; j < 4; j++){
-                    if (j == 0) apptTimes.add(Integer.toString((13 + i)%24) + ":00");
-                    else apptTimes.add(Integer.toString((13 + i)%24) + ":" + Integer.toString(15 * j));
-                }
-
-            }*/
             startTimeCombo.setItems(apptTimes);
             endTimeCombo.setItems(apptTimes);
             appointmentsTable.getSortOrder().add(appointmentIDColumn);
@@ -202,18 +199,28 @@ public class MainController implements Initializable {
 
     }
 
-    public void allApptsClicked(ActionEvent actionEvent) throws SQLException {
+    /**Populates table if allAppts radio button is clicked.
+     * Will get all appointments.*/
+    public void allApptsClicked() throws SQLException {
         setApptsTable(AppointmentDAO.getAllAppointments());
     }
 
-    public void weeklyClicked(ActionEvent actionEvent) throws SQLException {
+    /**Populates table if weekly radio button is clicked.
+     * Will get appointments for the next 7 days.*/
+    public void weeklyClicked() throws SQLException {
         setApptsTable(AppointmentDAO.getWeeklyAppointments());
     }
 
-    public void monthlyClicked(ActionEvent actionEvent) throws SQLException {
+    /**Populates table if monthly radio button is clicked.
+     * Will get appointments for the next month.*/
+    public void monthlyClicked() throws SQLException {
         setApptsTable(AppointmentDAO.getMonthlyAppointments());
     }
 
+    /**Sets up and populates appointments table.
+     * Will fill it with the observable list passed in.
+     *
+     * @param currentList the either filtered or unfiltered list of appointments from AppointmentDAO.*/
     public void setApptsTable(ObservableList<Appointment> currentList){
         appointmentsTable.setItems(currentList);
 
@@ -230,6 +237,10 @@ public class MainController implements Initializable {
         appointmentsTable.getSortOrder().add(appointmentIDColumn);
     }
 
+    /**Sets up and populates customers table.
+     * Will fill it with the observable list passed in.
+     *
+     * @param customerList the list of customers from customerDAO.*/
     public void setCustomerTable(ObservableList<Customer> customerList){
         customerTable.setItems(customerList);
 
@@ -243,40 +254,46 @@ public class MainController implements Initializable {
         customerTable.getSortOrder().add(customerIDColumn);
     }
 
+    /**Fills in appointment fields when table is clicked.
+     * If table clicked but no selection, returns before attempting to populate.*/
     public void populateApptFields() {
-        if(!appointmentsTable.getSelectionModel().isEmpty()) {
-            appointmentIDLabel.setText(Integer.toString(appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID()));
-            titleField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getTitle());
-            descriptionField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getDescription());
-            locationField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getLocation());
-            typeField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getType());
-            dateFieldPicker.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getStartZDT().toLocalDate());
-            contactCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getContact());
-            userIDCombo.setValue(Integer.toString(appointmentsTable.getSelectionModel().getSelectedItem().getUserID()));
-            customerIDCombo.setValue(Integer.toString(appointmentsTable.getSelectionModel().getSelectedItem().getCustomerID()));
-            startTimeCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getStartZDT().withZoneSameInstant(ZoneId.systemDefault()).toLocalTime().toString());
-            endTimeCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getEndZDT().withZoneSameInstant(ZoneId.systemDefault()).toLocalTime().toString());
-            saveApptButton.setDisable(true);
-            updateApptButton.setDisable(false);
-            newAppointmentButton.setDisable(false);
-        }
+        if(appointmentsTable.getSelectionModel().isEmpty())  return;
+        appointmentIDLabel.setText(Integer.toString(appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID()));
+        titleField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getTitle());
+        descriptionField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getDescription());
+        locationField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getLocation());
+        typeField.setText(appointmentsTable.getSelectionModel().getSelectedItem().getType());
+        dateFieldPicker.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getStartZDT().toLocalDate());
+        contactCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getContact());
+        userIDCombo.setValue(Integer.toString(appointmentsTable.getSelectionModel().getSelectedItem().getUserID()));
+        customerIDCombo.setValue(Integer.toString(appointmentsTable.getSelectionModel().getSelectedItem().getCustomerID()));
+        startTimeCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getStartZDT().withZoneSameInstant(ZoneId.systemDefault()).toLocalTime().toString());
+        endTimeCombo.setValue(appointmentsTable.getSelectionModel().getSelectedItem().getEndZDT().withZoneSameInstant(ZoneId.systemDefault()).toLocalTime().toString());
+        saveApptButton.setDisable(true);
+        updateApptButton.setDisable(false);
+        newAppointmentButton.setDisable(false);
     }
 
+    /**Fills in customer fields when table is clicked.
+     * If table clicked but no selection, returns before attempting to populate.*/
     public void populateCustFields() {
-        if(!customerTable.getSelectionModel().isEmpty()) {
-            customerIDLabel.setText(Integer.toString(customerTable.getSelectionModel().getSelectedItem().getCustomerID()));
-            nameField.setText(customerTable.getSelectionModel().getSelectedItem().getCustomerName());
-            addressField.setText(customerTable.getSelectionModel().getSelectedItem().getAddress());
-            postalCodeField.setText(customerTable.getSelectionModel().getSelectedItem().getPostalCode());
-            phoneField.setText(customerTable.getSelectionModel().getSelectedItem().getPhone());
-            divisionCombo.setValue(customerTable.getSelectionModel().getSelectedItem().getDivision());
-            countryCombo.setValue(customerTable.getSelectionModel().getSelectedItem().getCountry());
-            saveCustomerButton.setDisable(true);
-            updateCustomerButton.setDisable(false);
-            newCustomerButton.setDisable(false);
-        }
+        if(customerTable.getSelectionModel().isEmpty()) return;
+        customerIDLabel.setText(Integer.toString(customerTable.getSelectionModel().getSelectedItem().getCustomerID()));
+        nameField.setText(customerTable.getSelectionModel().getSelectedItem().getCustomerName());
+        addressField.setText(customerTable.getSelectionModel().getSelectedItem().getAddress());
+        postalCodeField.setText(customerTable.getSelectionModel().getSelectedItem().getPostalCode());
+        phoneField.setText(customerTable.getSelectionModel().getSelectedItem().getPhone());
+        divisionCombo.setValue(customerTable.getSelectionModel().getSelectedItem().getDivision());
+        countryCombo.setValue(customerTable.getSelectionModel().getSelectedItem().getCountry());
+        saveCustomerButton.setDisable(true);
+        updateCustomerButton.setDisable(false);
+        newCustomerButton.setDisable(false);
     }
 
+    /**Generates an appointment Id and returns it.
+     * returns (largest appointment ID in allAppointments + 1).
+     *
+     * @return the next incremental appointmentID.*/
     public static int nextAppointmentID() throws SQLException {
         ObservableList<Appointment> allAppointments = AppointmentDAO.getAllAppointments();
         int max =0;
@@ -288,6 +305,10 @@ public class MainController implements Initializable {
         return max + 1;
     }
 
+    /**Generates an customer Id and returns it.
+     * returns (largest customer ID in allCustomers + 1).
+     *
+     * @return the next incremental customerID.*/
     public static int nextCustomerID() throws SQLException {
         ObservableList<Customer> allCustomers = CustomerDAO.getAllCustomers();
         int max = 0;
@@ -299,6 +320,8 @@ public class MainController implements Initializable {
         return max + 1;
     }
 
+    /**Sets state to accept data for a new appointment.
+     * Clears all fields, generates new appointmentID, enables save button.*/
     public void newAppointmentClicked() throws SQLException {
         clearApptFields();
         appointmentIDLabel.setText(Integer.toString(nextAppointmentID()));
@@ -306,6 +329,8 @@ public class MainController implements Initializable {
         saveApptButton.setDisable(false);
     }
 
+    /**Sets state to accept data for a new customer.
+     * Clears all fields, generates new customerID, enables save button.*/
     public void newCustomerClicked() throws SQLException {
         clearCustFields();
         customerIDLabel.setText((Integer.toString(nextCustomerID())));
@@ -313,6 +338,8 @@ public class MainController implements Initializable {
         saveCustomerButton.setDisable(false);
     }
 
+    /**Clears all fields on appointment tab.
+     * Clears table selection and disables update button.*/
     public void clearApptFields(){
         appointmentIDLabel.setText("");
         titleField.clear();
@@ -330,6 +357,8 @@ public class MainController implements Initializable {
         appointmentsTable.getSelectionModel().clearSelection();
     }
 
+    /**Clears all fields on customer tab.
+     * Clears table selection and disables update button.*/
     public void clearCustFields(){
         customerIDLabel.setText("");
         nameField.clear();
@@ -343,7 +372,9 @@ public class MainController implements Initializable {
         customerTable.getSelectionModel().clearSelection();
     }
 
-    public void saveApptClicked() throws SQLException { //TODO write form validation for all forms and implement at beginning of this method and updateApptClicked
+    /**Saves new appointment to database.
+     * Validates forms, gathers form data, checks for scheduling conflicts, sends it to DAO which inserts into database.*/
+    public void saveApptClicked() throws SQLException {
         if(!validateAppointmentForms()) return;
         int apptID = nextAppointmentID();
         String title = titleField.getText();
@@ -374,6 +405,10 @@ public class MainController implements Initializable {
 
     }
 
+    /**Validates that forms are not empty and do not contain errors and shows message if errors are found.
+     * Trims spaces off of form strings to prevent " " from being stored, ensures end time is after start time.
+     *
+     * @return true if it passes all validation tests, false if it fails any.*/
     private boolean validateAppointmentForms() {
         DateTimeFormatter tf = DateTimeFormatter.ofPattern("HH:mm");
         if (appointmentIDLabel.getText().equals("")){
@@ -440,33 +475,50 @@ public class MainController implements Initializable {
         else return true;
     }
 
+    /**Shows alert that a field is empty.
+     * Gets passed in a field name and tells the user that it is empty.
+     *
+     * @param field the name of the field that is empty.*/
     public void isEmptyAlert(String field){
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setContentText(field + " field is empty.  All fields must be completed before saving or updating.");
         alert.showAndWait();
     }
 
+    /**Gets contactID back from a contact name.
+     * Searches allContacts for a match and returns ID, or -1 if no match found.
+     *
+     * @return the ID, or -1 if no match found.*/
     public int getContactID(String contactName) throws SQLException {
         ObservableList<Contact> allContacts = ContactDAO.getAllContacts();
         for(int i = 0; i < allContacts.size(); i++){
             if(allContacts.get(i).getContactName().equals(contactName)) return allContacts.get(i).getContactID();
-
         }
         return -1;
     }
 
+    /**Exits the application.
+     * Closes the db connection, gets the current stage and closes it.
+     *
+     * @param actionEvent this is where we get the stage from.*/
     public void exitClicked(ActionEvent actionEvent) throws SQLException {
         DBConnection.closeConnection();
         Stage stage = (Stage) ((Node)actionEvent.getSource()).getScene().getWindow();
         stage.close();
     }
 
+    /**Exits the application.
+     * Closes the db connection, gets the current stage and closes it.
+     *
+     * @param actionEvent this is where we get the stage from.*/
     public void exitCustomerClicked(ActionEvent actionEvent) throws SQLException {
         DBConnection.closeConnection();
         Stage stage = (Stage) ((Node)actionEvent.getSource()).getScene().getWindow();
         stage.close();
     }
 
+    /**Deletes the selected appointment.
+     * If no appointment is selected, catches a NullPointerException and displays an error message.*/
     public void deleteApptClicked() throws SQLException {
         try {
             int apptID = appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID();
@@ -484,7 +536,9 @@ public class MainController implements Initializable {
         }
     }
 
-    public void updateApptClicked(ActionEvent actionEvent) throws SQLException { //TODO implement form validation
+    /**Updates the selected appointment.
+     * Validates all forms and sends form data to DAO to update DB.*/
+    public void updateApptClicked() throws SQLException {
         try {
             if(!validateAppointmentForms()) return;
             int apptID = appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID();
@@ -510,19 +564,23 @@ public class MainController implements Initializable {
         }
     }
 
+    /**Populates division combo box upon country combo box being selected.
+     * Gets list of divisions, streams through them and creates a list to populate the division combo box.*/
     public void onCountrySelected() throws SQLException {
-
             ObservableList<String> divisions = FXCollections.observableArrayList();
-            DivisionDAO.getDivisionsOfCountry((String)countryCombo.getSelectionModel().getSelectedItem()).stream().forEach(division -> divisions.add(division));
+            DivisionDAO.getDivisionsOfCountry(countryCombo.getValue()).stream().
+                    forEach(division -> divisions.add(division));
             divisionCombo.setItems(divisions);
-
     }
 
-    public void updateCustomerClicked() throws SQLException { //TODO form validation
+    /**Updates selected customer with new form data.
+     * Validates forms, gets divisionId from divison name in combo box, sends it to DAO to update DB.*/
+    public void updateCustomerClicked() throws SQLException {
+        if(!validateCustomerForms()) return;
         int divisionID = 0;
         ObservableList<Division> allDivisions = DivisionDAO.getAllDivisions();
         for (int i = 0; i < allDivisions.size(); i++){
-            if (allDivisions.get(i).getDivision().equals(divisionCombo.getSelectionModel().getSelectedItem().toString())){
+            if (allDivisions.get(i).getDivision().equals(divisionCombo.getValue())){
                 divisionID = allDivisions.get(i).getDivisionID();
                 break;
             }
@@ -532,7 +590,9 @@ public class MainController implements Initializable {
         clearCustFields();
     }
 
-    public void saveCustomerClicked() throws SQLException { //TODO form validation
+    /**Saves new customer to DB.
+     * Validates forms, gets divisionID from division name in combo, sends to DAO to update DB.*/
+    public void saveCustomerClicked() throws SQLException {
         if(!validateCustomerForms()) return;
         int divisionID = 0;
         ObservableList<Division> allDivisions = DivisionDAO.getAllDivisions();
@@ -550,6 +610,10 @@ public class MainController implements Initializable {
         clearCustFields();
     }
 
+    /**Validates fields on customer tab.
+     * Checks for blank forms and alerts user if one is empty.
+     *
+     * @return true if all tests pass, false if any one fails.*/
     private boolean validateCustomerForms() {
         if(nameField.getText().trim().equals("")){
             isEmptyAlert("Name");
@@ -579,6 +643,8 @@ public class MainController implements Initializable {
 
     }
 
+    /**Deletes customer from DB.
+     * Checks for selection, checks if selected customer has appointments, calls delete function in DAO.*/
     public void deleteCustomerClicked() throws SQLException {
         if(customerTable.getSelectionModel().isEmpty()) return;
         if(!hasAppointments(customerTable.getSelectionModel().getSelectedItem().getCustomerID())) {
@@ -599,14 +665,21 @@ public class MainController implements Initializable {
         clearCustFields();
     }
 
+    /**Checks to see if customer has appointments scheduled.
+     * Gets appointments list, streams through it, returns true if any appointments customerId match this customerID.
+     *
+     * @param customerID the customer ID to check for.
+     * @return true if customer has appointments, false if none match.*/
     public boolean hasAppointments(int customerID) throws SQLException {
         return AppointmentDAO.getAllAppointments().stream().anyMatch(appointment -> customerID == appointment.getCustomerID());
     }
 
+    /**Checks to see if an appointment conflicts with other appointments scheduled fot that customer.
+     * Gets list of appointments with the same customer, checks if any appointments overlap with the current one passed in.
+     *
+     * @param appointment the appointment being checked before it is saved.
+     * @return true if any conflicts are found, false if none are found.*/
     public boolean hasConflict(Appointment appointment) throws SQLException {
-        /*Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setContentText(Integer.toString(AppointmentDAO.getAppointmentsByCustomer(CustomerDAO.getCustomerByID(appointment.getCustomerID())).size()));
-        alert.showAndWait();*/
         ObservableList<Appointment> customersAppointments = AppointmentDAO.getAppointmentsByCustomer(CustomerDAO.getCustomerByID(appointment.getCustomerID()));
         boolean hasConflict = false;
         for (int i = 0; i < customersAppointments.size(); i++) {
@@ -614,28 +687,21 @@ public class MainController implements Initializable {
             Instant endInstant = appointment.getEndZDT().toInstant();
             Instant startListInstant = customersAppointments.get(i).getStartZDT().withZoneSameLocal(ZoneId.of("Europe/London")).toInstant();
             Instant endListInstant = customersAppointments.get(i).getEndZDT().withZoneSameLocal(ZoneId.of("Europe/London")).toInstant();
-
             boolean startTimeConflict = startInstant.isBefore(endListInstant) && startInstant.isAfter(startListInstant);
             boolean endTimeConflict = endInstant.isBefore(endListInstant) && endInstant.isAfter(startListInstant);
             boolean startTimeConflict2 = startListInstant.isBefore(endInstant) && startListInstant.isAfter(startInstant);
             boolean endTimeConflict2 = endListInstant.isBefore(endInstant) && endListInstant.isAfter(startInstant);
-            /*System.out.println(startInstant.toString() + " " + endInstant.toString() + " " + startListInstant.toString() + " " + endListInstant.toString());
-            System.out.println(Boolean.toString(startTimeConflict) + Boolean.toString(endTimeConflict) + Boolean.toString(startTimeConflict2) + Boolean.toString(endTimeConflict2));*/
             if(startTimeConflict || startTimeConflict2 || endTimeConflict || endTimeConflict2) hasConflict = true;
-
         }
-        /*alert.setContentText(Boolean.toString(hasConflict));
-        alert.showAndWait();*/
         return hasConflict;
     }
 
+    /**Repopulates customerID list in combo box.
+     * Combo box data can be changed in program, so this combo box refreshes every time it is clicked.*/
     public void refreshCustomerCombo() throws SQLException {
         customerList = CustomerDAO.getAllCustomers();
         customerIDList = FXCollections.observableArrayList();
         CustomerDAO.getAllCustomers().stream().forEach(customer -> customerIDList.add(Integer.toString(customer.getCustomerID())));
-            /*for(int i = 0; i < customerList.size(); i++){
-                customerIDList.add(Integer.toString(customerList.get(i).getCustomerID()));
-            }*/
         customerIDCombo.setItems(customerIDList);
     }
 }
