@@ -3,6 +3,7 @@ package DAO;
 import Controller.MainController;
 import Model.Appointment;
 import Model.Customer;
+import Model.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -75,7 +76,7 @@ public class AppointmentDAO {
             String contact = resultSet.getString("Contact");
             String type = resultSet.getString("Type");
             ZonedDateTime start = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("Start"), dtf), ZoneId.of("Europe/London"));
-            ZonedDateTime end = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("End"), dtf), ZoneId.systemDefault());
+            ZonedDateTime end = ZonedDateTime.of(LocalDateTime.parse(resultSet.getString("End"), dtf), ZoneId.of("Europe/London"));
             int customerID = resultSet.getInt("Customer_ID");
             int userID = resultSet.getInt("User_ID");
 
@@ -108,8 +109,29 @@ public class AppointmentDAO {
             String location = rs.getString("Location");
             int contactID = rs.getInt("Contact_ID");
             String type = rs.getString("Type");
-            ZonedDateTime start = ZonedDateTime.of(LocalDateTime.parse(rs.getString("Start"), dtf), ZoneId.systemDefault());
-            ZonedDateTime end = ZonedDateTime.of(LocalDateTime.parse(rs.getString("End"), dtf), ZoneId.systemDefault());
+            ZonedDateTime start = ZonedDateTime.of(LocalDateTime.parse(rs.getString("Start"), dtf), ZoneId.of("Europe/London"));
+            ZonedDateTime end = ZonedDateTime.of(LocalDateTime.parse(rs.getString("End"), dtf), ZoneId.of("Europe/London"));
+            int customerID = rs.getInt("Customer_ID");
+            int userID = rs.getInt("User_ID");
+
+            customersAppointments.add(new Appointment(appointmentID, customerID, userID, ContactDAO.getContactNameByID(contactID), title, description, location, type, start, end));
+        }
+        return customersAppointments;
+    }
+
+    public static ObservableList<Appointment> getAppointmentsByUser(User user) throws SQLException {
+        ObservableList<Appointment> customersAppointments = FXCollections.observableArrayList();
+        Query.makeQuery("SELECT * FROM appointments as a JOIN customers as b ON a.Customer_ID = b.Customer_ID WHERE a.User_ID=" + user.getUserID());
+        ResultSet rs = Query.getResult();
+        while(rs.next()){
+            int appointmentID = rs.getInt("Appointment_ID");
+            String title = rs.getString("Title");
+            String description = rs.getString("Description");
+            String location = rs.getString("Location");
+            int contactID = rs.getInt("Contact_ID");
+            String type = rs.getString("Type");
+            ZonedDateTime start = ZonedDateTime.of(LocalDateTime.parse(rs.getString("Start"), dtf), ZoneId.of("Europe/London"));
+            ZonedDateTime end = ZonedDateTime.of(LocalDateTime.parse(rs.getString("End"), dtf), ZoneId.of("Europe/London"));
             int customerID = rs.getInt("Customer_ID");
             int userID = rs.getInt("User_ID");
 

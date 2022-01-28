@@ -176,7 +176,7 @@
                               </Pane>
                               <Pane prefHeight="200.0" prefWidth="387.0">
                                  <children>
-                                    <ComboBox fx:id="customerIDCombo" layoutX="194.0" layoutY="29.0" prefWidth="150.0" />
+                                    <ComboBox fx:id="customerIDCombo" layoutX="194.0" layoutY="29.0" prefWidth="150.0" onMouseClicked="#refreshCustomerCombo" />
                                     <ComboBox fx:id="userIDCombo" layoutX="194.0" layoutY="80.0" prefWidth="150.0" />
                                     <Label layoutX="88.0" layoutY="33.0" text="Customer ID" />
                                     <Label layoutX="115.0" layoutY="84.0" text="User ID" />

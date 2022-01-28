@@ -81,6 +81,7 @@ public class MainController implements Initializable {
     public Button deleteCustomerButton;
     public Button exitCustomerButton;
     public Label custStatusLabel;
+    
 
     public static User getCurrentUser() {
         return currentUser;
@@ -91,7 +92,7 @@ public class MainController implements Initializable {
     }
 
     @Override
-    public void initialize(URL location, ResourceBundle resources){  //TODO: separate and define functions to refresh combo box lists on click
+    public void initialize(URL location, ResourceBundle resources){
         //***Set up Appointments Tab***//
         offset = ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now());
         appointmentIDLabel.setText("");
@@ -99,6 +100,7 @@ public class MainController implements Initializable {
         monthRadio.setToggleGroup(viewToggleGroup);
         allApptsRadio.setToggleGroup(viewToggleGroup);
         saveApptButton.setDisable(true);
+        saveCustomerButton.setDisable(true);
         statusLabel.setText("Currently logged in as: " + getCurrentUser().getUserName());
         custStatusLabel.setText("Currently logged in as: " + getCurrentUser().getUserName());
         try {
@@ -137,6 +139,16 @@ public class MainController implements Initializable {
             divisionCombo.setItems(allDivisions);
 
 
+            //dateFieldPicker = new DatePicker();
+            dateFieldPicker.setDayCellFactory(picker -> new DateCell() {
+                @Override
+                public void updateItem(LocalDate date, boolean empty) {
+                    super.updateItem(date, empty);
+                    setDisable(empty || ((date.getDayOfWeek() == DayOfWeek.SATURDAY) || (date.getDayOfWeek() == DayOfWeek.SUNDAY) || (date.isBefore(LocalDate.now()))));
+
+                }
+            });
+            dateFieldPicker.setEditable(false);
             //TODO fix apptTimes list for timezones.
 
             apptTimes = FXCollections.observableArrayList();
@@ -151,19 +163,23 @@ public class MainController implements Initializable {
             endTimeCombo.setItems(apptTimes);
             appointmentsTable.getSortOrder().add(appointmentIDColumn);
 
-                //TODO give more information in this alert.  logic works, but needs appointment ID, date and time.
-            ObservableList<Appointment> allAppointments = AppointmentDAO.getAllAppointments();
+
+            ObservableList<Appointment> allAppointments = AppointmentDAO.getAppointmentsByUser(getCurrentUser());
             for (int i = 0; i < allAppointments.size(); i++){
-                if (ZonedDateTime.now().plusMinutes(15).isAfter(allAppointments.get(i).getStartZDT()) && ZonedDateTime.now().isBefore(allAppointments.get(i).getStartZDT())){
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION, "You have an appointment soon");
+                //System.out.println(ZonedDateTime.now().plusMinutes(15).toInstant() + ", " + allAppointments.get(i).getStartZDT().withZoneSameInstant(ZoneId.of("Europe/London")).toInstant());
+                if (ZonedDateTime.now().plusMinutes(15).isAfter(allAppointments.get(i).getStartZDT().withZoneSameLocal(ZoneId.of("Europe/London"))) && ZonedDateTime.now().isBefore(allAppointments.get(i).getStartZDT().withZoneSameLocal(ZoneId.of("Europe/London")))){
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION, "You have an appointment soon.\nAppointment ID: " + allAppointments.get(i).getAppointmentID() + "\nDate and Time: " +
+                            AppointmentDAO.dtf.format(allAppointments.get(i).getStartZDT().withZoneSameInstant(ZoneId.systemDefault())));
                     alert.showAndWait();
                 }
             }
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("You have no upcoming appointments within the next 15 minutes.");
+            alert.showAndWait();
 
         } catch (SQLException throwables) {
         throwables.printStackTrace();
         }
-
 
         //***set up Customers tab***//
 
@@ -369,10 +385,11 @@ public class MainController implements Initializable {
     public void deleteApptClicked() throws SQLException {
         try {
             int apptID = appointmentsTable.getSelectionModel().getSelectedItem().getAppointmentID();
+            String type = appointmentsTable.getSelectionModel().getSelectedItem().getType();
             AppointmentDAO.delete(apptID);
             setApptsTable(AppointmentDAO.getAllAppointments());
             clearApptFields();
-            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Appointment ID: " + apptID + " has been cancelled.");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Appointment ID: " + apptID + " of type: " + type +"  has been cancelled.");
             alert.showAndWait();
         }
         catch (NullPointerException e){
@@ -398,6 +415,7 @@ public class MainController implements Initializable {
             setApptsTable(AppointmentDAO.getAllAppointments());
             Alert alert = new Alert(Alert.AlertType.INFORMATION, "Appointment ID: " + apptID + " has been updated.");
             alert.showAndWait();
+            clearApptFields();
         }
         catch (NullPointerException e){
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -425,6 +443,7 @@ public class MainController implements Initializable {
         }
         CustomerDAO.updateCustomer(nameField.getText(), addressField.getText(), postalCodeField.getText(), phoneField.getText(), getCurrentUser().getUserName(), divisionID, customerIDLabel.getText());
         setCustomerTable(CustomerDAO.getAllCustomers());
+        clearCustFields();
     }
 
     public void saveCustomerClicked() throws SQLException { //TODO form validation
@@ -448,6 +467,9 @@ public class MainController implements Initializable {
         if(customerTable.getSelectionModel().isEmpty()) return;
         if(!hasAppointments(customerTable.getSelectionModel().getSelectedItem().getCustomerID())) {
             CustomerDAO.deleteCustomer(customerTable.getSelectionModel().getSelectedItem().getCustomerID());
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("Customer '" + customerTable.getSelectionModel().getSelectedItem().getCustomerName() + "' has been deleted");
+            alert.showAndWait();
         }
         else{
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -491,5 +513,13 @@ public class MainController implements Initializable {
         return hasConflict;
     }
 
-
+    public void refreshCustomerCombo() throws SQLException {
+        customerList = CustomerDAO.getAllCustomers();
+        customerIDList = FXCollections.observableArrayList();
+        CustomerDAO.getAllCustomers().stream().forEach(customer -> customerIDList.add(Integer.toString(customer.getCustomerID())));
+            /*for(int i = 0; i < customerList.size(); i++){
+                customerIDList.add(Integer.toString(customerList.get(i).getCustomerID()));
+            }*/
+        customerIDCombo.setItems(customerIDList);
+    }
 }
