@@ -101,11 +101,15 @@ public class MainController implements Initializable {
     }
 
     /**Sets up initial state of main form.
-     * Sets up toggle groups, populates tables and combo boxes, etc.*/
+     * Sets up toggle groups, populates tables and combo boxes, etc.
+     * <p><b>
+     *     Several lambda expressions are used in this method. A few are used to stream through lists while populating
+     *     combo boxes.  They replaced for loops which are still commented out below them.  One is used to set certain
+     *     cells in the datePicker to disabled so that the user cannot schedule appointments on weekends.
+     * </b></p>*/
     @Override
     public void initialize(URL location, ResourceBundle resources){
         //***Set up Appointments Tab***//
-        //offset = ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now());
         appointmentIDLabel.setText("");
         weekRadio.setToggleGroup(viewToggleGroup);
         monthRadio.setToggleGroup(viewToggleGroup);
@@ -149,8 +153,8 @@ public class MainController implements Initializable {
             DivisionDAO.getAllDivisionNames().stream().forEach(division -> allDivisions.add(division));
             divisionCombo.setItems(allDivisions);
 
-
-            //dateFieldPicker = new DatePicker();
+            //Sets Saturday, Sundays, and days in the past to empty in the datePicker
+            //Thank you, stackOverflow!!!
             dateFieldPicker.setDayCellFactory(picker -> new DateCell() {
                 @Override
                 public void updateItem(LocalDate date, boolean empty) {
@@ -565,7 +569,11 @@ public class MainController implements Initializable {
     }
 
     /**Populates division combo box upon country combo box being selected.
-     * Gets list of divisions, streams through them and creates a list to populate the division combo box.*/
+     * Gets list of divisions, streams through them and creates a list to populate the division combo box.
+     * <p><b>
+     *     A lambda expression is used here where a for loop could have been used.  Using a lambda achieved the same
+     *     thing with less lines and less variables and less of an opportunity to create a mutable state.
+     * </b></p>*/
     public void onCountrySelected() throws SQLException {
             ObservableList<String> divisions = FXCollections.observableArrayList();
             DivisionDAO.getDivisionsOfCountry(countryCombo.getValue()).stream().
@@ -669,7 +677,11 @@ public class MainController implements Initializable {
      * Gets appointments list, streams through it, returns true if any appointments customerId match this customerID.
      *
      * @param customerID the customer ID to check for.
-     * @return true if customer has appointments, false if none match.*/
+     * @return true if customer has appointments, false if none match.
+     * <p><b>
+     *     A lambda expression is used here. Rather than getting the list of appointments and looking through them in a
+     *     for loop and creating a boolean to return, a lambda expression does this all in one line with less variables.
+     * </b></p>*/
     public boolean hasAppointments(int customerID) throws SQLException {
         return AppointmentDAO.getAllAppointments().stream().anyMatch(appointment -> customerID == appointment.getCustomerID());
     }
@@ -697,9 +709,14 @@ public class MainController implements Initializable {
     }
 
     /**Repopulates customerID list in combo box.
-     * Combo box data can be changed in program, so this combo box refreshes every time it is clicked.*/
+     * Combo box data can be changed in program, so this combo box refreshes every time it is clicked.
+     * <p><b>
+     *     A lambda expression is used here while streaming through the customer list from customerDAO.
+     *     Each object in the list runs through the forEach(Consumer) and only its customerID attribute is added to the
+     *     ObservableList that will populate customerIDCombo.  Using a lambda reduces the amount of code by doing that
+     *     process in one line rather than with a traditional for loop and extra variables.
+     * </b></p>*/
     public void refreshCustomerCombo() throws SQLException {
-        customerList = CustomerDAO.getAllCustomers();
         customerIDList = FXCollections.observableArrayList();
         CustomerDAO.getAllCustomers().stream().forEach(customer -> customerIDList.add(Integer.toString(customer.getCustomerID())));
         customerIDCombo.setItems(customerIDList);
