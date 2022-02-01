@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
@@ -16,6 +17,7 @@ import java.sql.SQLException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 import static DAO.AppointmentDAO.dtf;
 
@@ -83,7 +85,24 @@ public class MainController implements Initializable {
     public Button deleteCustomerButton;
     public Button exitCustomerButton;
     public Label custStatusLabel;
-    
+    public TableView<Appointment> reportApptTable;
+    public TableView<ReportData> reportApptByTypeTable;
+    public ComboBox<Month> reportMonthCombo;
+    public PieChart reportPieChart;
+    public ComboBox reportPieCombo;
+    public ComboBox<Contact> reportsContactCombo;
+    public TableColumn reportsApptIDColumn;
+    public TableColumn reportsTitleColumn;
+    public TableColumn reportsTypeColumn;
+    public TableColumn reportsDescriptionColumn;
+    public TableColumn reportsStartColumn;
+    public TableColumn reportsEndColumn;
+    public TableColumn reportsCumstomerIDColumn;
+    public ObservableList<ReportData> tableData = FXCollections.observableArrayList();
+    public TableColumn reportApptByTypeTypeColumn;
+    public TableColumn reportApptByTypeCountColumn;
+    public Label reportsStatusLabel;
+
     /**Gets the currently logged in user.
      * Used by the DAOs to log user changes to DB.
      *
@@ -118,6 +137,7 @@ public class MainController implements Initializable {
         saveCustomerButton.setDisable(true);
         statusLabel.setText("Currently logged in as: " + getCurrentUser().getUserName());
         custStatusLabel.setText("Currently logged in as: " + getCurrentUser().getUserName());
+        reportsStatusLabel.setText("Currently logged in as: " + getCurrentUser().getUserName());
         try {
             setApptsTable(AppointmentDAO.getAllAppointments());
             setCustomerTable(CustomerDAO.getAllCustomers());
@@ -143,7 +163,9 @@ public class MainController implements Initializable {
             /*for(int i = 0; i < customerList.size(); i++){
                 customerIDList.add(Integer.toString(customerList.get(i).getCustomerID()));
             }*/
+
             customerIDCombo.setItems(customerIDList);
+
 
             ObservableList<String> allCountries = FXCollections.observableArrayList();
             CountryDAO.getAllCountryNames().stream().forEach(country -> allCountries.add(country));
@@ -198,9 +220,119 @@ public class MainController implements Initializable {
 
 
         //***set up Reports tab***//
+/*        ObservableList<PieChart.Data> pieChartData =
+                FXCollections.observableArrayList(
+                        new PieChart.Data("Grapefruit", 13),
+                        new PieChart.Data("Oranges", 25),
+                        new PieChart.Data("Plums", 10),
+                        new PieChart.Data("Pears", 22),
+                        new PieChart.Data("Apples", 300)
+                );
+        reportPieChart.setTitle("Imported Fruits");
+        reportPieChart.setData(pieChartData);*/
+        //populates pie chart with piechart.data stuff
+        try {
+            ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+            CustomerDAO.getAllCustomers().stream().forEach(customer -> {
+                        try {
+                            pieChartData.add(new PieChart.Data(customer.getCustomerName(), AppointmentDAO.getAppointmentsByCustomer(customer).size()));
+                        } catch (SQLException throwables) {
+                            throwables.printStackTrace();
+                        }
+                    }
 
 
+            );
+            reportPieChart.setData(pieChartData);
+            reportPieChart.setTitle("Appointments by Customer");
 
+        }catch (SQLException e){
+
+        }
+
+        try {
+            reportsContactCombo.setItems(ContactDAO.getAllContacts());
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        setReportMonthCombo();
+
+    }
+
+    public void setReportMonthCombo(){
+        ObservableList<Month> months = FXCollections.observableArrayList();
+        for(int i = 0; i < Month.values().length; i++){
+            months.add(Month.of(i + 1));
+        }
+        reportMonthCombo.setItems(months);
+    }
+
+    public void reportsMonthComboClicked() throws SQLException {
+        if (!reportMonthCombo.getSelectionModel().isEmpty()) setReportApptByTypeTable(reportMonthCombo.getValue());
+    }
+
+    public void setReportApptByTypeTable(Month month) throws SQLException {
+        if(reportMonthCombo.getSelectionModel().isEmpty()) return;
+        tableData.clear();
+        AppointmentDAO.getAllAppointments().stream().forEach(appointment ->
+        {
+            if(appointment.getStartZDT().getMonth().equals(month))
+            tableData = addIfNew(new ReportData(appointment.getType(), 1), tableData);
+
+        });
+        reportApptByTypeTable.setItems(tableData);
+        reportApptByTypeTypeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
+        reportApptByTypeCountColumn.setCellValueFactory(new PropertyValueFactory<>("count"));
+
+    }
+
+    public ObservableList<ReportData> addIfNew(ReportData reportData, ObservableList<ReportData> tableData){
+
+        try{
+            for (int i = 0; i < tableData.size(); i++){
+                if (tableData.get(i).getType().equals(reportData.getType())){
+                    tableData.get(i).increment();
+                    return  tableData;
+                }
+            }
+            tableData.add(reportData);
+            return tableData;
+        }
+        catch (NullPointerException e){
+            tableData.add(reportData);
+            return tableData;
+        }
+
+    }
+
+    public void reportsContactComboClicked() throws SQLException {
+        if(!reportsContactCombo.getSelectionModel().isEmpty()) populateScheduleReportFields(reportsContactCombo.getValue());
+    }
+
+    public void populateScheduleReportFields(Contact contact) throws SQLException {
+        ObservableList<Appointment> appointmentsByContact = FXCollections.observableArrayList();
+        AppointmentDAO.getAllAppointments().stream().forEach(appointment -> {
+            if(appointment.getContact().equals(contact.getContactName())){
+                appointmentsByContact.add(appointment);
+            }
+        });
+        setScheduleTable(appointmentsByContact);
+    }
+
+    public void setScheduleTable(ObservableList<Appointment> appointments){
+        reportApptTable.setItems(appointments);
+
+        reportsApptIDColumn.setCellValueFactory(new PropertyValueFactory<>("appointmentID"));
+        reportsTitleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+        reportsTypeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
+        reportsDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
+        reportsStartColumn.setCellValueFactory(new PropertyValueFactory<>("start"));
+        reportsEndColumn.setCellValueFactory(new PropertyValueFactory<>("end"));
+        reportsCumstomerIDColumn.setCellValueFactory(new PropertyValueFactory<>("customerID"));
+
+        reportApptTable.getSortOrder().add(reportsStartColumn);
     }
 
     /**Populates table if allAppts radio button is clicked.

@@ -4,6 +4,11 @@ public class Contact {
     private int contactID;
     private String contactName, email;
 
+    @Override
+    public String toString() {
+        return contactName;
+    }
+
     public Contact(int contactID, String contactName, String email) {
         this.contactID = contactID;
         this.contactName = contactName;
