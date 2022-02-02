@@ -12,6 +12,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
+import java.awt.print.Printable;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.*;
@@ -220,35 +221,16 @@ public class MainController implements Initializable {
 
 
         //***set up Reports tab***//
-/*        ObservableList<PieChart.Data> pieChartData =
-                FXCollections.observableArrayList(
-                        new PieChart.Data("Grapefruit", 13),
-                        new PieChart.Data("Oranges", 25),
-                        new PieChart.Data("Plums", 10),
-                        new PieChart.Data("Pears", 22),
-                        new PieChart.Data("Apples", 300)
-                );
-        reportPieChart.setTitle("Imported Fruits");
-        reportPieChart.setData(pieChartData);*/
+
         //populates pie chart with piechart.data stuff
+
         try {
-            ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
-            CustomerDAO.getAllCustomers().stream().forEach(customer -> {
-                        try {
-                            pieChartData.add(new PieChart.Data(customer.getCustomerName(), AppointmentDAO.getAppointmentsByCustomer(customer).size()));
-                        } catch (SQLException throwables) {
-                            throwables.printStackTrace();
-                        }
-                    }
-
-
-            );
-            reportPieChart.setData(pieChartData);
-            reportPieChart.setTitle("Appointments by Customer");
-
+            updatePieChart();
         }catch (SQLException e){
-
+            e.printStackTrace();
         }
+
+
 
         try {
             reportsContactCombo.setItems(ContactDAO.getAllContacts());
@@ -259,6 +241,22 @@ public class MainController implements Initializable {
 
         setReportMonthCombo();
 
+    }
+
+    private void updatePieChart() throws SQLException {
+        ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+        CustomerDAO.getAllCustomers().stream().forEach(customer -> {
+                    try {
+                        pieChartData.add(new PieChart.Data(customer.getCustomerName(), AppointmentDAO.getAppointmentsByCustomer(customer).size()));
+                    } catch (SQLException throwables) {
+                        throwables.printStackTrace();
+                    }
+                }
+
+
+        );
+        reportPieChart.setData(pieChartData);
+        reportPieChart.setTitle("Appointments by Customer");
     }
 
     public void setReportMonthCombo(){
@@ -538,7 +536,7 @@ public class MainController implements Initializable {
         saveApptButton.setDisable(true);
         updateApptButton.setDisable(false);
         newAppointmentButton.setDisable(false);
-
+        updatePieChart();
     }
 
     /**Validates that forms are not empty and do not contain errors and shows message if errors are found.
@@ -748,6 +746,7 @@ public class MainController implements Initializable {
         updateCustomerButton.setDisable(false);
         newCustomerButton.setDisable(false);
         clearCustFields();
+        updatePieChart();
     }
 
     /**Validates fields on customer tab.
