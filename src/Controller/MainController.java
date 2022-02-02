@@ -47,16 +47,16 @@ public class MainController implements Initializable {
     private static User currentUser;
     public static ZoneOffset offset;
     public Label statusLabel;
-    public TableColumn appointmentIDColumn;
-    public TableColumn titleColumn;
-    public TableColumn descriptionColumn;
-    public TableColumn locationColumn;
-    public TableColumn contactColumn;
-    public TableColumn typeColumn;
-    public TableColumn startColumn;
-    public TableColumn endColumn;
-    public TableColumn customerColumn;
-    public TableColumn userIDColumn;
+    public TableColumn<Appointment, Integer> appointmentIDColumn;
+    public TableColumn<Appointment, String> titleColumn;
+    public TableColumn<Appointment, String> descriptionColumn;
+    public TableColumn<Appointment, String> locationColumn;
+    public TableColumn<Appointment, String> contactColumn;
+    public TableColumn<Appointment, String> typeColumn;
+    public TableColumn<Appointment, String> startColumn;
+    public TableColumn<Appointment, String> endColumn;
+    public TableColumn<Appointment, String> customerColumn;
+    public TableColumn<Appointment, Integer> userIDColumn;
     public DatePicker dateFieldPicker;
     public ObservableList<String> contactNameList;
     public ObservableList<Contact> contactsList;
@@ -64,15 +64,14 @@ public class MainController implements Initializable {
     public ObservableList<User> userList;
     public ObservableList<String> customerIDList;
     public ObservableList<Customer> customerList;
-    public ObservableList<String> apptTimes;
     public TableView<Customer> customerTable;
-    public TableColumn customerIDColumn;
-    public TableColumn nameColumn;
-    public TableColumn addressColumn;
-    public TableColumn postalCodeColumn;
-    public TableColumn phoneColumn;
-    public TableColumn countryColumn;
-    public TableColumn divisionColumn;
+    public TableColumn<Customer, Integer> customerIDColumn;
+    public TableColumn<Customer, String> nameColumn;
+    public TableColumn<Customer, String> addressColumn;
+    public TableColumn<Customer, String> postalCodeColumn;
+    public TableColumn<Customer, String> phoneColumn;
+    public TableColumn<Customer, String> countryColumn;
+    public TableColumn<Customer, String> divisionColumn;
     public TextField nameField;
     public TextField addressField;
     public TextField postalCodeField;
@@ -90,18 +89,17 @@ public class MainController implements Initializable {
     public TableView<ReportData> reportApptByTypeTable;
     public ComboBox<Month> reportMonthCombo;
     public PieChart reportPieChart;
-    public ComboBox reportPieCombo;
     public ComboBox<Contact> reportsContactCombo;
-    public TableColumn reportsApptIDColumn;
-    public TableColumn reportsTitleColumn;
-    public TableColumn reportsTypeColumn;
-    public TableColumn reportsDescriptionColumn;
-    public TableColumn reportsStartColumn;
-    public TableColumn reportsEndColumn;
-    public TableColumn reportsCumstomerIDColumn;
+    public TableColumn<Appointment, Integer> reportsApptIDColumn;
+    public TableColumn<Appointment, String> reportsTitleColumn;
+    public TableColumn<Appointment, String> reportsTypeColumn;
+    public TableColumn<Appointment, String> reportsDescriptionColumn;
+    public TableColumn<Appointment, String> reportsStartColumn;
+    public TableColumn<Appointment, String> reportsEndColumn;
+    public TableColumn<Appointment, Integer> reportsCumstomerIDColumn;
     public ObservableList<ReportData> tableData = FXCollections.observableArrayList();
-    public TableColumn reportApptByTypeTypeColumn;
-    public TableColumn reportApptByTypeCountColumn;
+    public TableColumn<ReportData, String> reportApptByTypeTypeColumn;
+    public TableColumn<ReportData, Integer> reportApptByTypeCountColumn;
     public Label reportsStatusLabel;
 
     /**Gets the currently logged in user.
@@ -202,7 +200,6 @@ public class MainController implements Initializable {
 
             ObservableList<Appointment> allAppointments = AppointmentDAO.getAppointmentsByUser(getCurrentUser());
             for (int i = 0; i < allAppointments.size(); i++){
-                //System.out.println(ZonedDateTime.now().plusMinutes(15).toInstant() + ", " + allAppointments.get(i).getStartZDT().withZoneSameInstant(ZoneId.of("Europe/London")).toInstant());
                 if (ZonedDateTime.now().plusMinutes(15).isAfter(allAppointments.get(i).getStartZDT().withZoneSameLocal(ZoneId.of("Europe/London"))) && ZonedDateTime.now().isBefore(allAppointments.get(i).getStartZDT().withZoneSameLocal(ZoneId.of("Europe/London")))){
                     Alert alert = new Alert(Alert.AlertType.INFORMATION, "You have an appointment soon.\nAppointment ID: " + allAppointments.get(i).getAppointmentID() + "\nDate and Time: " +
                             dtf.format(allAppointments.get(i).getStartZDT().withZoneSameInstant(ZoneId.systemDefault())));
@@ -217,11 +214,6 @@ public class MainController implements Initializable {
         throwables.printStackTrace();
         }
 
-        //***set up Customers tab***//
-
-
-        //***set up Reports tab***//
-
         //populates pie chart with piechart.data stuff
 
         try {
@@ -229,8 +221,6 @@ public class MainController implements Initializable {
         }catch (SQLException e){
             e.printStackTrace();
         }
-
-
 
         try {
             reportsContactCombo.setItems(ContactDAO.getAllContacts());
@@ -240,9 +230,16 @@ public class MainController implements Initializable {
         }
 
         setReportMonthCombo();
-
     }
 
+    /**This method updates the pie chart on the reports page.
+     * Gets all customers, streams the list and uses a lambda expression to create piechart data objects
+     * from each appointment in the list.
+     * <p><b>
+     *     A Lambda expression is used here.  It streams through the list with a forEach(Consumer) and transforms each
+     *     appointment object in the list into piechart data.  Using a lambda eliminates the need for a variable to
+     *     hold the list, and is a more elegant way to solve the problem with less code.
+     * </b></p>*/
     private void updatePieChart() throws SQLException {
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
         CustomerDAO.getAllCustomers().stream().forEach(customer -> {
@@ -259,6 +256,8 @@ public class MainController implements Initializable {
         reportPieChart.setTitle("Appointments by Customer");
     }
 
+    /**This method sets up the reportMonthCombo box.
+     * Iterates through the months in the Months class and stores in an ObservableList.*/
     public void setReportMonthCombo(){
         ObservableList<Month> months = FXCollections.observableArrayList();
         for(int i = 0; i < Month.values().length; i++){
@@ -267,10 +266,24 @@ public class MainController implements Initializable {
         reportMonthCombo.setItems(months);
     }
 
+    /**This is a listener method that updates reportApptByTypeTable onAction of reportMonthCombo.
+     * Checks if combo box is empty, and if its not, runs setReportApptByTypeTable with the value of reportMonthCombo.*/
     public void reportsMonthComboClicked() throws SQLException {
         if (!reportMonthCombo.getSelectionModel().isEmpty()) setReportApptByTypeTable(reportMonthCombo.getValue());
     }
 
+    /**This method populates the reportApptByTypeTable.
+     * Checks if reportMonthCombo is empty, if not, clears the table and resets it using a lambda expression
+     * to stream through list of all appointments.
+     * <p><b>
+     *     A lambda expression is used here while streaming through the list of all appointments.  Uses forEach(),
+     *     and transforms each appointment object into pieChart.data by creating ReportData objects for each
+     *     new appointment type, and incrementing count if the type already exists.  Putting this chunk of
+     *     code in a lambda expression is more intuitive, more concise, uses less variables, and is very
+     *     convenient.  Less code, less mutable states, better code.
+     * </b></p>
+     *
+     * @param month the month selected in reportMonthCombo.*/
     public void setReportApptByTypeTable(Month month) throws SQLException {
         if(reportMonthCombo.getSelectionModel().isEmpty()) return;
         tableData.clear();
@@ -286,6 +299,14 @@ public class MainController implements Initializable {
 
     }
 
+    /**This method helps setReportApptByTypeTable() in the lambda forEach block.
+     * Gets the tableData list and in each appointment above, checks if the appointment type is new
+     * or has already been seen in the stream before.  If seen, it increments ReportData.count on the
+     * already established type.  Results in count of each different type of appointment by month.
+     *
+     * @param reportData the new ReportData in question.
+     * @param tableData the ObservableList we are adding to.
+     * @return tableData the observableList that we have added to.*/
     public ObservableList<ReportData> addIfNew(ReportData reportData, ObservableList<ReportData> tableData){
 
         try{
@@ -305,10 +326,23 @@ public class MainController implements Initializable {
 
     }
 
+    /**This method is activated onAction of reportsContatcCombo.
+     * IF combo box is not empty runs populateScheduleReportFields() on the value of reportsContactCombo (Contact).*/
     public void reportsContactComboClicked() throws SQLException {
         if(!reportsContactCombo.getSelectionModel().isEmpty()) populateScheduleReportFields(reportsContactCombo.getValue());
     }
 
+    /**This method streams through all appointments list and adds the ones that match contact to appointmentsByContact
+     * list. Gets a contact from combo box and filters appointments by that contact, then runs setScheduleTable and
+     * passes in the list.
+     *<p><b>
+     *     This uses a lambda expression to stream through the list of all appointments and inserts a bit of code
+     *     inline to check each appointment if its contact matches the contact that was passed in.  It uses less
+     *     code, is more intuitive, more easily read and understood, uses less variables, and creates less
+     *     mutable states.
+     *</b></p>
+     *
+     * @param contact the selected contact from reportsContactCombo*/
     public void populateScheduleReportFields(Contact contact) throws SQLException {
         ObservableList<Appointment> appointmentsByContact = FXCollections.observableArrayList();
         AppointmentDAO.getAllAppointments().stream().forEach(appointment -> {
@@ -319,6 +353,10 @@ public class MainController implements Initializable {
         setScheduleTable(appointmentsByContact);
     }
 
+    /**This method sets the schedule table.
+     * Gets passed in a list of appointments filtered by contact and sets them on reportApptTable and sorts by start.
+     *
+     * @param appointments the Observablelist of appointments filtered by contact.*/
     public void setScheduleTable(ObservableList<Appointment> appointments){
         reportApptTable.setItems(appointments);
 
@@ -364,8 +402,8 @@ public class MainController implements Initializable {
         locationColumn.setCellValueFactory(new PropertyValueFactory<>("location"));
         contactColumn.setCellValueFactory(new PropertyValueFactory<>("contact"));
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
-        startColumn.setCellValueFactory(new PropertyValueFactory<Appointment, String>("start"));
-        endColumn.setCellValueFactory(new PropertyValueFactory<Appointment, String>("end"));
+        startColumn.setCellValueFactory(new PropertyValueFactory<>("start"));
+        endColumn.setCellValueFactory(new PropertyValueFactory<>("end"));
         customerColumn.setCellValueFactory(new PropertyValueFactory<>("customerID"));
         userIDColumn.setCellValueFactory(new PropertyValueFactory<>("userID"));
         appointmentsTable.getSortOrder().add(appointmentIDColumn);

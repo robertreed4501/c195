@@ -42,7 +42,7 @@ public class LoginController implements Initializable{
         loginButton.setText(rb.getString("Login"));
         ZoneId zoneID = ZoneId.systemDefault();
         String zID = zoneID.getId();
-        topLabel.setText("Zone ID " + zID);
+        topLabel.setText("Timezone: " + zID);
 
         try {
             DBConnection.makeConnection();

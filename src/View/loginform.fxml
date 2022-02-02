@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="239.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.LoginController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="239.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.LoginController">
    <children>
       <MenuBar>
         <menus>
@@ -28,7 +28,6 @@
       </MenuBar>
       <Pane prefHeight="200.0" prefWidth="200.0">
          <children>
-            <Label fx:id="topLabel" layoutX="167.0" layoutY="14.0" text="Please Login" />
             <TextField fx:id="userField" layoutX="159.0" layoutY="41.0" />
             <PasswordField fx:id="passwordField" layoutX="159.0" layoutY="68.0" />
             <Label fx:id="userLabel" layoutX="85.0" layoutY="45.0" text="Username" />
@@ -39,6 +38,7 @@
          <children>
             <Button fx:id="loginButton" layoutX="157.0" layoutY="14.0" mnemonicParsing="false" onAction="#loginClicked" prefHeight="25.0" prefWidth="86.0" text="Login" />
             <Button fx:id="cancelButton" layoutX="157.0" layoutY="41.0" mnemonicParsing="false" onAction="#cancelClicked" prefHeight="25.0" prefWidth="86.0" text="Cancel" />
+            <Label fx:id="topLabel" layoutX="16.0" layoutY="77.0" text="Please Login" />
          </children>
       </Pane>
    </children>
