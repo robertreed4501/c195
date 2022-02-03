@@ -123,7 +123,9 @@ public class MainController implements Initializable {
      * <p><b>
      *     Several lambda expressions are used in this method. A few are used to stream through lists while populating
      *     combo boxes.  They replaced for loops which are still commented out below them.  One is used to set certain
-     *     cells in the datePicker to disabled so that the user cannot schedule appointments on weekends.
+     *     cells in the datePicker to disabled so that the user cannot schedule appointments on weekends.  They all
+     *     help to make the code more clear and intuitive and they reduce the amount of variables and the amount of
+     *     code.
      * </b></p>*/
     @Override
     public void initialize(URL location, ResourceBundle resources){
