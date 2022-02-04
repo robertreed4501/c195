@@ -9,12 +9,16 @@ public class DBConnection {
 
     /**The name of the database. */
     private static final String dbName ="client_schedule";
+
     /**The database url. */
     private static final String DB_URL="jdbc:mysql://localhost:3306/"+ dbName;
+
     /**The username to log into the database with. */
-    private static final String username="rob";
+    private static final String username="sqlUser";
+
     /**The password for the above username. */
-    private static final String password="mobius42";
+    private static final String password="Passw0rd!";
+
     /**The connection object from java.sql.  */
     static Connection cxn;
 
