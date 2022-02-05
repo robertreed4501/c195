@@ -122,8 +122,7 @@ public class MainController implements Initializable {
      * Sets up toggle groups, populates tables and combo boxes, etc.
      * <p><b>
      *     Several lambda expressions are used in this method. A few are used to stream through lists while populating
-     *     combo boxes.  They replaced for loops which are still commented out below them.  One is used to set certain
-     *     cells in the datePicker to disabled so that the user cannot schedule appointments on weekends.  They all
+     *     combo boxes.  They replaced for loops which are still commented out below them.  They
      *     help to make the code more clear and intuitive and they reduce the amount of variables and the amount of
      *     code.
      * </b></p>*/
@@ -176,16 +175,6 @@ public class MainController implements Initializable {
             DivisionDAO.getAllDivisionNames().stream().forEach(division -> allDivisions.add(division));
             divisionCombo.setItems(allDivisions);
 
-            //Sets Saturday, Sundays, and days in the past to empty in the datePicker
-            //Thank you, stackOverflow!!!
-            dateFieldPicker.setDayCellFactory(picker -> new DateCell() {
-                @Override
-                public void updateItem(LocalDate date, boolean empty) {
-                    super.updateItem(date, empty);
-                    setDisable(empty || ((date.getDayOfWeek() == DayOfWeek.SATURDAY) || (date.getDayOfWeek() == DayOfWeek.SUNDAY) || (date.isBefore(LocalDate.now()))));
-
-                }
-            });
             dateFieldPicker.setEditable(false);
 
             ZonedDateTime openTime = ZonedDateTime.of(2022,1,1,8,0,0,0,ZoneId.of("America/New_York"));

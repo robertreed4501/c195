@@ -3,6 +3,11 @@ to create, edit, and delete appointments and customer records.  Users can also v
 the number of appointments by type and month, each contact's next months' schedule, and a pie chart
 representing the number of appointments by customer.
 
+Author: Robert Reed
+Email: rreed45@wgu.edu
+Student application version: 1.0
+Date: 02/04/2022
+
 This program was developed with IntelliJ/IDEA 20.1.1 using Java jdk-11.0.11
 The JavaFX version used is openJFX 11.0.2
 
@@ -19,5 +24,8 @@ completely and press 'Save' to save the new record.  Pressing the exit button wi
 changes will be lost.  On the reports tab, choose a Contact to view their next months' schedule.  Below that, choose
 a month to view the number of each type of appointment scheduled in that month.  Finally, the Appointments by Customer
 chart shows the distribution of customers in all appointments.
+
+In section a3f, I included a report to show the number of appointments are scheduled for each customer.  This data
+is represented in a multi-colored pie chart.
 
 Using MySQL JDBC Connector 8.0.25
