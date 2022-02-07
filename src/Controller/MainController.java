@@ -714,6 +714,13 @@ public class MainController implements Initializable {
             int customerID = Integer.parseInt(customerIDCombo.getValue());
             int userID = Integer.parseInt(userIDCombo.getValue());
             int contactID = getContactID(contactCombo.getValue());
+
+            if(hasConflict(new Appointment(apptID, customerID, userID, Integer.toString(contactID), title, description, location, type, start, end))){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setContentText("Customer " + CustomerDAO.getCustomerByID(customerID).getCustomerName() + " already has an appointment scheduled at this time.  Choose another time.");
+                alert.showAndWait();
+                return;
+            }
             AppointmentDAO.updateAppointment(apptID, title, description, location, type, start, end, customerID, userID, contactID);
             setApptsTable(AppointmentDAO.getAllAppointments());
             Alert alert = new Alert(Alert.AlertType.INFORMATION, "Appointment ID: " + apptID + " has been updated.");
