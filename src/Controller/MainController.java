@@ -2,6 +2,7 @@ package Controller;
 
 import DAO.*;
 import Model.*;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -12,95 +13,83 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
-import java.awt.print.Printable;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
-
 import static DAO.AppointmentDAO.dtf;
 
-/**This is the controller class for mainform(dot)fxml, the main form of the application.*/
+/**This is the controller class for mainform.fxml, the main form of the application.*/
 public class MainController implements Initializable {
-    public TableView <Appointment> appointmentsTable;
-    public RadioButton monthRadio;
-    public RadioButton weekRadio;
-    public RadioButton allApptsRadio;
-    public Label appointmentIDLabel;
-    public TextField titleField;
-    public TextArea descriptionField;
-    public TextField locationField;
-    public ComboBox <String> contactCombo;
-    public TextField typeField;
-    public ComboBox <String> startTimeCombo;
-    public ComboBox <String> endTimeCombo;
-    public ComboBox <String> customerIDCombo;
-    public ComboBox <String> userIDCombo;
-    public Button saveApptButton;
-    public Button updateApptButton;
-    public Button deleteApptButton;
-    public Button exitApptButton;
-    public Button newAppointmentButton;
-    public ToggleGroup viewToggleGroup;
+
     private static User currentUser;
-    public static ZoneOffset offset;
-    public Label statusLabel;
-    public TableColumn<Appointment, Integer> appointmentIDColumn;
-    public TableColumn<Appointment, String> titleColumn;
-    public TableColumn<Appointment, String> descriptionColumn;
-    public TableColumn<Appointment, String> locationColumn;
-    public TableColumn<Appointment, String> contactColumn;
-    public TableColumn<Appointment, String> typeColumn;
-    public TableColumn<Appointment, String> startColumn;
-    public TableColumn<Appointment, String> endColumn;
-    public TableColumn<Appointment, String> customerColumn;
-    public TableColumn<Appointment, Integer> userIDColumn;
+
+    public TableView <Appointment> appointmentsTable, reportApptTable;
+    public TableColumn<Appointment, Integer> appointmentIDColumn, userIDColumn, reportsApptIDColumn,
+            reportsCumstomerIDColumn;
+    public TableColumn<Appointment, String> titleColumn, descriptionColumn, locationColumn, contactColumn, typeColumn,
+            startColumn, endColumn, customerColumn, reportsTitleColumn, reportsTypeColumn, reportsDescriptionColumn,
+            reportsStartColumn, reportsEndColumn;
+    public RadioButton monthRadio, weekRadio, allApptsRadio;
+    public Label appointmentIDLabel, statusLabel, customerIDLabel, custStatusLabel, reportsStatusLabel;
+    public TextField titleField, locationField, typeField, nameField, addressField, postalCodeField, phoneField;
+    public TextArea descriptionField;
+    public ComboBox <String> contactCombo, startTimeCombo, endTimeCombo, customerIDCombo, userIDCombo, countryCombo,
+            divisionCombo;
+    public ToggleGroup viewToggleGroup;
+    public Button saveApptButton, updateApptButton, deleteApptButton,exitApptButton,newAppointmentButton,
+            newCustomerButton, saveCustomerButton, updateCustomerButton, deleteCustomerButton, exitCustomerButton;
     public DatePicker dateFieldPicker;
-    public ObservableList<String> contactNameList;
+    public ObservableList<String> contactNameList, userIDList, customerIDList;
     public ObservableList<Contact> contactsList;
-    public ObservableList<String> userIDList;
     public ObservableList<User> userList;
-    public ObservableList<String> customerIDList;
     public ObservableList<Customer> customerList;
     public TableView<Customer> customerTable;
     public TableColumn<Customer, Integer> customerIDColumn;
-    public TableColumn<Customer, String> nameColumn;
-    public TableColumn<Customer, String> addressColumn;
-    public TableColumn<Customer, String> postalCodeColumn;
-    public TableColumn<Customer, String> phoneColumn;
-    public TableColumn<Customer, String> countryColumn;
-    public TableColumn<Customer, String> divisionColumn;
-    public TextField nameField;
-    public TextField addressField;
-    public TextField postalCodeField;
-    public Label customerIDLabel;
-    public TextField phoneField;
-    public ComboBox<String> countryCombo;
-    public ComboBox<String> divisionCombo;
-    public Button newCustomerButton;
-    public Button saveCustomerButton;
-    public Button updateCustomerButton;
-    public Button deleteCustomerButton;
-    public Button exitCustomerButton;
-    public Label custStatusLabel;
-    public TableView<Appointment> reportApptTable;
+    public TableColumn<Customer, String> nameColumn, addressColumn, postalCodeColumn, phoneColumn, countryColumn,
+            divisionColumn;
     public TableView<ReportData> reportApptByTypeTable;
     public ComboBox<Month> reportMonthCombo;
     public PieChart reportPieChart;
     public ComboBox<Contact> reportsContactCombo;
-    public TableColumn<Appointment, Integer> reportsApptIDColumn;
-    public TableColumn<Appointment, String> reportsTitleColumn;
-    public TableColumn<Appointment, String> reportsTypeColumn;
-    public TableColumn<Appointment, String> reportsDescriptionColumn;
-    public TableColumn<Appointment, String> reportsStartColumn;
-    public TableColumn<Appointment, String> reportsEndColumn;
-    public TableColumn<Appointment, Integer> reportsCumstomerIDColumn;
     public ObservableList<ReportData> tableData = FXCollections.observableArrayList();
     public TableColumn<ReportData, String> reportApptByTypeTypeColumn;
     public TableColumn<ReportData, Integer> reportApptByTypeCountColumn;
-    public Label reportsStatusLabel;
+
+    /**Sets up initial state of main form.
+     * Sets up toggle groups, populates tables and combo boxes, etc.
+     * <p><b>
+     *     Several lambda expressions are used in this method. A few are used to stream through lists while populating
+     *     combo boxes.  They replaced for loops which are still commented out below them.  They
+     *     help to make the code more clear and intuitive and they reduce the amount of variables and the amount of
+     *     code.
+     * </b></p>*/
+    @Override
+    public void initialize(URL location, ResourceBundle resources){
+        //***Set up Appointments Tab***//
+
+        setApptsToggleGroup();
+        setButtonsInitialState();
+        setCurrentUserLabel();
+        dateFieldPicker.setEditable(false);
+        setReportMonthCombo();
+        try {
+            checkUpcomingAppts();
+            setApptsTable(AppointmentDAO.getAllAppointments());
+            setCustomerTable(CustomerDAO.getAllCustomers());
+            setContactCombo();
+            setUserIDCombo();
+            setCustomerIDCombo();
+            setCountryCombo();
+            setDivisionCombo();
+            setApptCombos();
+            updatePieChart();
+            reportsContactCombo.setItems(ContactDAO.getAllContacts());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
 
     /**Gets the currently logged in user.
      * Used by the DAOs to log user changes to DB.
@@ -118,110 +107,82 @@ public class MainController implements Initializable {
         MainController.currentUser = currentUser;
     }
 
-    /**Sets up initial state of main form.
-     * Sets up toggle groups, populates tables and combo boxes, etc.
-     * <p><b>
-     *     Several lambda expressions are used in this method. A few are used to stream through lists while populating
-     *     combo boxes.  They replaced for loops which are still commented out below them.  They
-     *     help to make the code more clear and intuitive and they reduce the amount of variables and the amount of
-     *     code.
-     * </b></p>*/
-    @Override
-    public void initialize(URL location, ResourceBundle resources){
-        //***Set up Appointments Tab***//
-        appointmentIDLabel.setText("");
+    public void setApptsToggleGroup(){
         weekRadio.setToggleGroup(viewToggleGroup);
         monthRadio.setToggleGroup(viewToggleGroup);
         allApptsRadio.setToggleGroup(viewToggleGroup);
+    }
+
+    public void setButtonsInitialState(){
         saveApptButton.setDisable(true);
         saveCustomerButton.setDisable(true);
+    }
+
+    public void setCurrentUserLabel(){
         statusLabel.setText("Currently logged in as: " + getCurrentUser().getUserName());
         custStatusLabel.setText("Currently logged in as: " + getCurrentUser().getUserName());
         reportsStatusLabel.setText("Currently logged in as: " + getCurrentUser().getUserName());
-        try {
-            setApptsTable(AppointmentDAO.getAllAppointments());
-            setCustomerTable(CustomerDAO.getAllCustomers());
-            contactsList = ContactDAO.getAllContacts();
-            contactNameList = FXCollections.observableArrayList();
-            ContactDAO.getAllContacts().stream().forEach(contact -> contactNameList.add(contact.getContactName()));
-            /*for(int i = 0; i < contactsList.size(); i++){
-                contactNameList.add(contactsList.get(i).getContactName());
-            }*/
-            contactCombo.setItems(contactNameList);
-
-            userList = UserDAO.getAllUsers();
-            userIDList = FXCollections.observableArrayList();
-            UserDAO.getAllUsers().stream().forEach(user -> userIDList.add(Integer.toString(user.getUserID())));
-            /*for(int i = 0; i < userList.size(); i++){
-                userIDList.add(Integer.toString(userList.get(i).getUserID()));
-            }*/
-            userIDCombo.setItems(userIDList);
-
-            customerList = CustomerDAO.getAllCustomers();
-            customerIDList = FXCollections.observableArrayList();
-            CustomerDAO.getAllCustomers().stream().forEach(customer -> customerIDList.add(Integer.toString(customer.getCustomerID())));
-            /*for(int i = 0; i < customerList.size(); i++){
-                customerIDList.add(Integer.toString(customerList.get(i).getCustomerID()));
-            }*/
-
-            customerIDCombo.setItems(customerIDList);
-
-
-            ObservableList<String> allCountries = FXCollections.observableArrayList();
-            CountryDAO.getAllCountryNames().stream().forEach(country -> allCountries.add(country));
-            countryCombo.setItems(allCountries);
-
-            ObservableList<String> allDivisions = FXCollections.observableArrayList();
-            DivisionDAO.getAllDivisionNames().stream().forEach(division -> allDivisions.add(division));
-            divisionCombo.setItems(allDivisions);
-
-            dateFieldPicker.setEditable(false);
-
-            ZonedDateTime openTime = ZonedDateTime.of(2022,1,1,8,0,0,0,ZoneId.of("America/New_York"));
-            ObservableList<String> apptTimes = FXCollections.observableArrayList();
-            while(openTime.getHour() < 22){
-                apptTimes.add(openTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalTime().toString());
-                openTime = openTime.plusMinutes(15);
-            }
-
-            startTimeCombo.setItems(apptTimes);
-            endTimeCombo.setItems(apptTimes);
-            appointmentsTable.getSortOrder().add(appointmentIDColumn);
-
-
-            ObservableList<Appointment> allAppointments = AppointmentDAO.getAppointmentsByUser(getCurrentUser());
-            for (int i = 0; i < allAppointments.size(); i++){
-                if (ZonedDateTime.now().plusMinutes(15).isAfter(allAppointments.get(i).getStartZDT().withZoneSameLocal(ZoneId.of("Europe/London"))) && ZonedDateTime.now().isBefore(allAppointments.get(i).getStartZDT().withZoneSameLocal(ZoneId.of("Europe/London")))){
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION, "You have an appointment soon.\nAppointment ID: " + allAppointments.get(i).getAppointmentID() + "\nDate and Time: " +
-                            dtf.format(allAppointments.get(i).getStartZDT().withZoneSameInstant(ZoneId.systemDefault())));
-                    alert.showAndWait();
-                }
-            }
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("You have no upcoming appointments within the next 15 minutes.");
-            alert.showAndWait();
-
-        } catch (SQLException throwables) {
-        throwables.printStackTrace();
-        }
-
-        //populates pie chart with piechart.data stuff
-
-        try {
-            updatePieChart();
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-
-        try {
-            reportsContactCombo.setItems(ContactDAO.getAllContacts());
-
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-
-        setReportMonthCombo();
     }
+
+    public void setContactCombo() throws SQLException{
+        contactsList = ContactDAO.getAllContacts();
+        contactNameList = FXCollections.observableArrayList();
+        ContactDAO.getAllContacts().forEach(contact -> contactNameList.add(contact.getContactName()));
+        contactCombo.setItems(contactNameList);
+    }
+
+    public void setUserIDCombo() throws SQLException {
+        userList = UserDAO.getAllUsers();
+        userIDList = FXCollections.observableArrayList();
+        UserDAO.getAllUsers().forEach(user -> userIDList.add(Integer.toString(user.getUserID())));
+        userIDCombo.setItems(userIDList);
+    }
+
+    public void setCustomerIDCombo() throws SQLException {
+        customerList = CustomerDAO.getAllCustomers();
+        customerIDList = FXCollections.observableArrayList();
+        CustomerDAO.getAllCustomers().forEach(customer -> customerIDList.add(Integer.toString(customer.getCustomerID())));
+        customerIDCombo.setItems(customerIDList);
+    }
+
+    public void setCountryCombo() throws SQLException {
+        //ObservableList<String> allCountries = FXCollections.observableArrayList();
+        //CountryDAO.getAllCountryNames().stream().forEach(country -> allCountries.add(country));
+        countryCombo.setItems(CountryDAO.getAllCountryNames());
+    }
+
+    public void setDivisionCombo() throws SQLException {
+        //ObservableList<String> allDivisions = FXCollections.observableArrayList();
+        //DivisionDAO.getAllDivisionNames().stream().forEach(division -> allDivisions.add(division));
+        divisionCombo.setItems(DivisionDAO.getAllDivisionNames());
+    }
+
+    public void setApptCombos(){
+        ZonedDateTime openTime = ZonedDateTime.of(2022,1,1,8,0,0,0,ZoneId.of("America/New_York"));
+        ObservableList<String> apptTimes = FXCollections.observableArrayList();
+        while(openTime.getHour() < 22){
+            apptTimes.add(openTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalTime().toString());
+            openTime = openTime.plusMinutes(15);
+        }
+        startTimeCombo.setItems(apptTimes);
+        endTimeCombo.setItems(apptTimes);
+    }
+
+    public void checkUpcomingAppts() throws SQLException {
+        ObservableList<Appointment> allAppointments = AppointmentDAO.getAppointmentsByUser(getCurrentUser());
+        for (int i = 0; i < allAppointments.size(); i++){
+            if (ZonedDateTime.now().plusMinutes(15).isAfter(allAppointments.get(i).getStartZDT().withZoneSameLocal(ZoneId.of("Europe/London"))) && ZonedDateTime.now().isBefore(allAppointments.get(i).getStartZDT().withZoneSameLocal(ZoneId.of("Europe/London")))){
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "You have an appointment soon.\nAppointment ID: " + allAppointments.get(i).getAppointmentID() + "\nDate and Time: " +
+                        dtf.format(allAppointments.get(i).getStartZDT().withZoneSameInstant(ZoneId.systemDefault())));
+                alert.showAndWait();
+            }
+        }
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setContentText("You have no upcoming appointments within the next 15 minutes.");
+        alert.showAndWait();
+    }
+
+
 
     /**This method updates the pie chart on the reports page.
      * Gets all customers, streams the list and uses a lambda expression to create piechart data objects
@@ -233,16 +194,14 @@ public class MainController implements Initializable {
      * </b></p>*/
     private void updatePieChart() throws SQLException {
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
-        CustomerDAO.getAllCustomers().stream().forEach(customer -> {
+        CustomerDAO.getAllCustomers().forEach(customer -> {
                     try {
                         pieChartData.add(new PieChart.Data(customer.getCustomerName(), AppointmentDAO.getAppointmentsByCustomer(customer).size()));
                     } catch (SQLException throwables) {
                         throwables.printStackTrace();
                     }
-                }
 
-
-        );
+        });
         reportPieChart.setData(pieChartData);
         reportPieChart.setTitle("Appointments by Customer");
     }
@@ -278,7 +237,7 @@ public class MainController implements Initializable {
     public void setReportApptByTypeTable(Month month) throws SQLException {
         if(reportMonthCombo.getSelectionModel().isEmpty()) return;
         tableData.clear();
-        AppointmentDAO.getAllAppointments().stream().forEach(appointment ->
+        AppointmentDAO.getAllAppointments().forEach(appointment ->
         {
             if(appointment.getStartZDT().getMonth().equals(month))
             tableData = addIfNew(new ReportData(appointment.getType(), 1), tableData);
@@ -336,7 +295,7 @@ public class MainController implements Initializable {
      * @param contact the selected contact from reportsContactCombo*/
     public void populateScheduleReportFields(Contact contact) throws SQLException {
         ObservableList<Appointment> appointmentsByContact = FXCollections.observableArrayList();
-        AppointmentDAO.getAllAppointments().stream().forEach(appointment -> {
+        AppointmentDAO.getAllAppointments().forEach(appointment -> {
             if(appointment.getContact().equals(contact.getContactName())){
                 appointmentsByContact.add(appointment);
             }
@@ -815,7 +774,6 @@ public class MainController implements Initializable {
             return false;
         }
         else return true;
-
     }
 
     /**Deletes customer from DB.
