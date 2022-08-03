@@ -12,6 +12,13 @@ Date: 02/04/2022
 
 This program was developed with IntelliJ/IDEA 20.1.1 using Java jdk-11.0.11
 The JavaFX version used is openJFX 11.0.2
+<br/>
+<div align="center">
+  <img src="https://github.com/robertreed4501/robertreed4501/blob/main/images/screenshots/customersPage.PNG" height="420px"><br/>
+  <img src="https://github.com/robertreed4501/robertreed4501/blob/main/images/screenshots/appointmentsPage.PNG" height="420px"><br/>
+  <img src="https://github.com/robertreed4501/robertreed4501/blob/main/images/screenshots/reportsPage.PNG" height="420px"><br/>
+</div>
+<br/>
 
 Instructions for use:
 Launch the application.  To login as a test user enter 'test' in both the username and password fields.  Click Login.
