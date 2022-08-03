@@ -5,13 +5,10 @@ to create, edit, and delete appointments and customer records.  Users can also v
 the number of appointments by type and month, each contact's next months' schedule, and a pie chart
 representing the number of appointments by customer.
 
-Author: Robert Reed
-Email: ********@***.***
-Student application version: 1.0
-Date: 02/04/2022
+
 
 This program was developed with IntelliJ/IDEA 20.1.1 using Java jdk-11.0.11
-The JavaFX version used is openJFX 11.0.2
+JavaFX version openJFX 11.0.2 and MySQL JDBC Connector version 8.0.25
 <br/>
 <div align="center">
   <img src="https://github.com/robertreed4501/robertreed4501/blob/main/images/screenshots/customersPage.PNG" height="420px"><br/>
@@ -36,4 +33,3 @@ chart shows the distribution of customers in all appointments.
 
 
 
-Using MySQL JDBC Connector 8.0.25
